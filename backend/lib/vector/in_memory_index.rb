@@ -1,6 +1,6 @@
 module Vector
   class InMemoryIndex
-    Row = Struct.new(:id, :content, :metadata, :vector, keyword_init: true)
+    Row = Struct.new(:id, :content, :metadata, :vector)
 
     def initialize
       @rows = []
@@ -59,10 +59,12 @@ module Vector
 
     def cosine_similarity(a, b)
       return 0.0 if a.empty? || b.empty? || a.length != b.length
+
       dot = a.zip(b).sum { |x, y| x * y }
       na = Math.sqrt(a.sum { |x| x * x })
       nb = Math.sqrt(b.sum { |x| x * x })
       return 0.0 if na.zero? || nb.zero?
+
       dot / (na * nb)
     end
   end

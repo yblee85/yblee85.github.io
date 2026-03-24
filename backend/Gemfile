@@ -5,6 +5,7 @@ gem "sinatra", "~> 4.0"
 gem "puma", "~> 6.4"
 gem "langchainrb", "~> 0.19.5"
 gem "anthropic", "~> 0.3.2"
+gem "rake", "~> 13.2"
 
 group :development do
   gem "rubocop", "~> 1.72", require: false
@@ -12,5 +13,6 @@ group :development do
 end
 
 group :test do
+  gem "minitest", "~> 5.25"
   gem "rack-test", "~> 2.2"
 end

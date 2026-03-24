@@ -43,9 +43,7 @@ module Config
     }
 
     missing = required_values.select { |_k, v| v.to_s.strip.empty? }.keys
-    unless missing.empty?
-      raise ValidationError, "Missing required config: #{missing.join(', ')}"
-    end
+    raise ValidationError, "Missing required config: #{missing.join(', ')}" unless missing.empty?
 
     unless Dir.exist?(aboutme_data_dir_path)
       raise ValidationError, "ABOUTME_DATA_DIR_PATH does not exist: #{aboutme_data_dir_path}"
@@ -60,14 +58,10 @@ module Config
       raise ValidationError, "EMBEDDING_BASE_URL is invalid: #{embedding_base_url}"
     end
 
-    unless rag_chunk_size_chars.positive?
-      raise ValidationError, "RAG_CHUNK_SIZE_CHARS must be > 0"
-    end
+    raise ValidationError, "RAG_CHUNK_SIZE_CHARS must be > 0" unless rag_chunk_size_chars.positive?
 
     overlap = rag_chunk_overlap_percent
-    unless overlap >= 0.0 && overlap < 100.0
-      raise ValidationError, "RAG_CHUNK_OVERLAP_PERCENT must be >= 0 and < 100"
-    end
+    raise ValidationError, "RAG_CHUNK_OVERLAP_PERCENT must be >= 0 and < 100" unless overlap >= 0.0 && overlap < 100.0
 
     true
   end
@@ -75,6 +69,7 @@ module Config
   def string(name, default:)
     value = ENV[name]
     return default if value.nil? || value.strip.empty?
+
     value
   end
 

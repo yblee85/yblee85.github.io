@@ -25,13 +25,18 @@ class QaServiceTest < Minitest::Test
 
     def summarize(question:, contexts:)
       raise @error if @error
+
       "summary: #{question} (#{contexts.size})"
     end
   end
 
   def test_returns_context_fallback_when_llm_is_not_configured
     hits = [{ id: "a", score: 0.9, metadata: { "k" => "v" }, content: "worked on X" }]
-    service = Rag::QaService.new(index: FakeIndex.new(hits), embedder: Object.new, llm_client: FakeLlm.new(configured: false))
+    service = Rag::QaService.new(
+      index: FakeIndex.new(hits),
+      embedder: Object.new,
+      llm_client: FakeLlm.new(configured: false)
+    )
 
     result = service.answer(question: "what did you do?")
 
@@ -40,7 +45,11 @@ class QaServiceTest < Minitest::Test
   end
 
   def test_returns_empty_message_when_no_hits
-    service = Rag::QaService.new(index: FakeIndex.new([]), embedder: Object.new, llm_client: FakeLlm.new(configured: true))
+    service = Rag::QaService.new(
+      index: FakeIndex.new([]),
+      embedder: Object.new,
+      llm_client: FakeLlm.new(configured: true)
+    )
 
     result = service.answer(question: "unknown")
 

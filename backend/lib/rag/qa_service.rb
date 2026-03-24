@@ -17,7 +17,7 @@ module Rag
           rescue StandardError => e
             # Graceful degradation: retrieval still works even if LLM vendor config fails.
             "LLM summarization unavailable (#{e.class}: #{e.message}).\n" \
-              "Relevant context:\n- #{contexts.join("\n- ")}"
+            "Relevant context:\n- #{contexts.join("\n- ")}"
           end
         elsif contexts.empty?
           "I could not find relevant information in the portfolio data."

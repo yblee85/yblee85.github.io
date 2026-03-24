@@ -34,42 +34,10 @@ API endpoints:
 - `GET /health`
 - `POST /api/chat` with body: `{ "message": "..." }`
 
-## Chroma utilities (optional)
-
-This repo now includes:
-
-- `external/aboutme/about.schema` - JSON schema reminder/contract
-- `lib/chroma/client.rb` - Faraday-based ChromaDB HTTP client (`Chroma::Client`)
-- `lib/chroma/loader.rb` - reads one JSON file and upserts into the file's `collection_name`
-- `bin/load_data_to_chroma.rb` - CLI loader that sends data to a running Chroma server
-
 Dependency:
 
 - `faraday` gem (used by `Chroma::Client`)
 - `langchainrb` + `anthropic` gems (used by `Llm::AnthropicClient`)
-
-Run loader (example):
-
-```bash
-cd backend
-bundle add faraday
-export CHROMA_BASE_URL=http://localhost:8000
-ruby ../bin/load_data_to_chroma.rb external_example/data/work.json
-```
-
-Use in app code:
-
-```ruby
-result = Chroma::Loader.upsert_file(
-  file_path: "external_example/data/work.json",
-  client: chroma_client
-)
-
-# result includes:
-# result[:collection_name]
-# result[:count]
-# result[:ids]
-```
 
 Recommended env flags:
 

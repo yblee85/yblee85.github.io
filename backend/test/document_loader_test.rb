@@ -11,7 +11,7 @@ class DocumentLoaderTest < Minitest::Test
       chunk_overlap_percent: 50
     )
 
-    assert_equal ["abcd", "cdef", "efgh", "ghij", "ij"], chunks
+    assert_equal %w[abcd cdef efgh ghij ij], chunks
   end
 
   def test_load_all_creates_chunked_documents_with_metadata
