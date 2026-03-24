@@ -36,12 +36,12 @@ describe("ProtectedAuthContent", () => {
     mockAuthState({});
   });
 
-  it("shows Google and GitHub sign-in (no LinkedIn) when logged out", () => {
+  it("shows Google, GitHub, and LinkedIn sign-in when logged out", () => {
     render(<ProtectedAuthContent />);
 
     expect(screen.getByRole("button", { name: /sign in with google/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sign in with github/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /linkedin/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /sign in with linkedin/i })).toBeInTheDocument();
   });
 
   it("calls loginWithRedirect with google-oauth2 when Google is clicked", () => {
@@ -61,6 +61,16 @@ describe("ProtectedAuthContent", () => {
 
     expect(mockLoginWithRedirect).toHaveBeenCalledWith({
       authorizationParams: { connection: "github" },
+    });
+  });
+
+  it("calls loginWithRedirect with linkedin when LinkedIn is clicked", () => {
+    render(<ProtectedAuthContent />);
+
+    fireEvent.click(screen.getByRole("button", { name: /sign in with linkedin/i }));
+
+    expect(mockLoginWithRedirect).toHaveBeenCalledWith({
+      authorizationParams: { connection: "linkedin" },
     });
   });
 
