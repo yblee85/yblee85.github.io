@@ -1,0 +1,18 @@
+{
+    "collection_name": "my_experience",
+    "documents": [
+      {
+        "id": "work-experience",
+        "content": "Yunbo implemented a cool feature at Example Inc.",
+        "metadata": {
+          "category": "work_experience",
+          "organization": "Example Inc.",
+          "period": {
+            "start": "2025-03",
+            "end": "2025-06"
+          },
+          "tags": ["feature", "implementation"]
+        }
+      }
+    ]
+  }

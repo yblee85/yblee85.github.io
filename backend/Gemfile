@@ -1,0 +1,16 @@
+source "https://rubygems.org"
+
+gem "faraday", "~> 2.12"
+gem "sinatra", "~> 4.0"
+gem "puma", "~> 6.4"
+gem "langchainrb", "~> 0.19.5"
+gem "anthropic", "~> 0.3.2"
+
+group :development do
+  gem "rubocop", "~> 1.72", require: false
+  gem "rubocop-performance", "~> 1.24", require: false
+end
+
+group :test do
+  gem "rack-test", "~> 2.2"
+end

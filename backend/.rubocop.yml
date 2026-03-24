@@ -1,0 +1,9 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+  Exclude:
+    - "external/**/*"
+    - "external_example/**/*"
+
+Layout/LineLength:
+  Max: 120
