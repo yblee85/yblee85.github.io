@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: .
+    container_name: portfolio-backend
+    environment:
+      PORT: "3000"
+      ABOUTME_DATA_DIR_PATH: ${ABOUTME_DATA_DIR_PATH:-./external/data}
+      EMBEDDING_BASE_URL: "http://embeddings:80"
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - embeddings
+
+  embeddings:
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-latest
+    container_name: portfolio-embeddings
+    command:
+      - "--model-id"
+      - "sentence-transformers/all-MiniLM-L6-v2"
+      - "--port"
+      - "80"
+    ports:
+      - "8080:80"

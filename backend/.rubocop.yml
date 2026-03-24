@@ -1,0 +1,71 @@
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.3
+  Exclude:
+    - "vendor/**/*"
+    - ".bundle/**/*"
+    - "external/**/*"
+    - "external_example/**/*"
+    - "Gemfile"
+    - "config.ru"
+    - "Rakefile"
+  SuggestExtensions: false
+
+Layout/LineLength:
+  Max: 120
+
+Style/Documentation:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/FetchEnvVar:
+  Enabled: false
+
+Style/ClassAndModuleChildren:
+  Enabled: false
+
+Style/OneClassPerFile:
+  Enabled: false
+
+Naming/PredicateMethod:
+  Enabled: false
+
+Metrics/MethodLength:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: true
+  Max: 35
+
+Metrics/CyclomaticComplexity:
+  Enabled: true
+  Max: 12
+
+Metrics/PerceivedComplexity:
+  Enabled: true
+  Max: 12
+
+Metrics/BlockLength:
+  Exclude:
+    - "test/**/*"
+
+Metrics/ParameterLists:
+  Max: 6
+
+# --- Style defaults ---
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Naming/MethodParameterName:
+  MinNameLength: 2
+  AllowedNames:
+    - _
+    - k
+    - x
+    - y
+    - a
+    - b
+    - id
+    - to

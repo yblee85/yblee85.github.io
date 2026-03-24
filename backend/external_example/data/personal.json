@@ -1,0 +1,17 @@
+{
+    "collection_name": "my_experience",
+    "documents": [
+      {
+        "id": "personal-experience",
+        "content": "Yunbo did an awesome thing at example event",
+        "metadata": {
+          "category": "personal_experience",
+          "period": {
+            "start": "2023-03",
+            "end": "2023-03"
+          },
+          "tags": ["example", "event"]
+        }
+      }
+    ]
+  }
