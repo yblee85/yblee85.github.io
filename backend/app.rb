@@ -51,15 +51,15 @@ class PortfolioApi < Sinatra::Base
   end
 
   # TODO: Enable chat later
-  post "/api/chat" do
-    payload = JSON.parse(request.body.read)
-    message = payload["message"].to_s.strip
-    halt 400, { error: "message is required" }.to_json if message.empty?
+  # post "/api/chat" do
+  #   payload = JSON.parse(request.body.read)
+  #   message = payload["message"].to_s.strip
+  #   halt 400, { error: "message is required" }.to_json if message.empty?
 
-    QA.answer(question: message).to_json
-  rescue JSON::ParserError
-    halt 400, { error: "invalid JSON payload" }.to_json
-  end
+  #   QA.answer(question: message).to_json
+  # rescue JSON::ParserError
+  #   halt 400, { error: "invalid JSON payload" }.to_json
+  # end
 end
 
 PortfolioApi.run! if $PROGRAM_NAME == __FILE__
