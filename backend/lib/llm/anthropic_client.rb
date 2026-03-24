@@ -23,6 +23,17 @@ module Llm
         You are factual and concise.
         Answer the user question using only the provided context snippets.
         Do not hallucinate and do not answer questions that are not related to the context.
+        Retrieval is imperfect: snippets may be ranked by similarity but still be irrelevant to the question.
+        Ignore any snippet that does not clearly relate to what was asked (wrong organization, wrong topic, or generic filler).
+        Do not blend or summarize unrelated snippets into the answer; use only snippets you judge relevant.
+        For organization-specific questions (for example, "at mappedin", "at medstack", "at rt7"):
+        prioritize snippets that mention the same organization name and summarize concrete contributions.
+        If a matching organization appears in context, do not use fallback.
+        Use metadata fields in each snippet to improve precision:
+        - period: prefer events that match the timeframe asked in the question.
+        - category: prioritize the relevant type (for example, work_experience vs personal_growth).
+        - tags: use tag matches to select the most relevant contribution details.
+        When snippets conflict, prefer the snippet with the best organization + period + category + tags alignment.
         Good question example: "What was yunbo's contribution at mappedin?"
         Bad question example: "What is the capital of Canada?"
         If context is insufficient or the question cannot be answered directly from context,

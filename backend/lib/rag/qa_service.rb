@@ -6,9 +6,9 @@ module Rag
       @llm_client = llm_client
     end
 
-    def answer(question:, k: 5, min_score: 0.2)
+    def answer(question:, k: 8, min_score: 0.2)
       hits = @index.search(query: question, embedder: @embedder, k: k, min_score: min_score)
-      contexts = hits.map { |h| h[:content] }
+      contexts = hits.map { |h| format_hit_context(h) }
 
       answer_text =
         if @llm_client&.configured? && !contexts.empty?
@@ -30,6 +30,58 @@ module Rag
         answer: answer_text,
         sources: hits.map { |h| { id: h[:id], score: h[:score], metadata: h[:metadata] } }
       }
+    end
+
+    private
+
+    def format_hit_context(hit)
+      metadata = hit[:metadata] || {}
+      lines = []
+      lines << "id: #{hit[:id]}" if hit[:id]
+      lines.concat(metadata_lines(metadata))
+      lines << "content: #{hit[:content]}"
+      lines.join("\n")
+    end
+
+    def metadata_lines(metadata)
+      lines = []
+      org = meta_value(metadata, "organization")
+      lines << "organization: #{org}" if org
+
+      cat = meta_value(metadata, "category")
+      lines << "category: #{cat}" if cat
+
+      period_line = period_line_for(metadata)
+      lines << period_line if period_line
+
+      tags_line = tags_line_for(metadata)
+      lines << tags_line if tags_line
+      lines
+    end
+
+    def meta_value(metadata, key)
+      val = metadata[key] || metadata[key.to_sym]
+      return if val.nil? || val.to_s.strip.empty?
+
+      val
+    end
+
+    def period_line_for(metadata)
+      period = metadata["period"] || metadata[:period]
+      return unless period.is_a?(Hash)
+
+      start_value = period["start"] || period[:start]
+      end_value = period["end"] || period[:end]
+      return unless start_value || end_value
+
+      "period: #{start_value} to #{end_value}"
+    end
+
+    def tags_line_for(metadata)
+      tags = metadata["tags"] || metadata[:tags]
+      return unless tags.is_a?(Array) && !tags.empty?
+
+      "tags: #{tags.join(', ')}"
     end
   end
 end

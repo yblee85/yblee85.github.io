@@ -18,14 +18,14 @@ module Vector
           id: doc.fetch(:id),
           content: doc.fetch(:content),
           metadata: metadata,
-          vector: embedder.embed(embedding_text)
+          vector: embed_text(embedder, embedding_text)
         )
       end
       self
     end
 
     def search(query:, embedder:, k: 5, min_score: nil)
-      query_vector = embedder.embed(query)
+      query_vector = embed_text(embedder, query)
       scored = @rows.map do |row|
         score = cosine_similarity(query_vector, row.vector)
         row.to_h.merge(score: score)
@@ -66,6 +66,10 @@ module Vector
       return 0.0 if na.zero? || nb.zero?
 
       dot / (na * nb)
+    end
+
+    def embed_text(embedder, text)
+      embedder.embed(text)
     end
   end
 end
