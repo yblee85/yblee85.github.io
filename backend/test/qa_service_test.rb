@@ -58,7 +58,19 @@ class QaServiceTest < Minitest::Test
   end
 
   def test_gracefully_handles_llm_errors
-    hits = [{ id: "a", score: 0.9, metadata: {}, content: "worked on Y" }]
+    hits = [
+      {
+        id: "a",
+        score: 0.9,
+        metadata: {
+          "organization" => "Mappedin",
+          "category" => "work_experience",
+          "period" => { "start" => "2025-01", "end" => "2026-01" },
+          "tags" => %w[snowflake etl]
+        },
+        content: "worked on Y"
+      }
+    ]
     service = Rag::QaService.new(
       index: FakeIndex.new(hits),
       embedder: Object.new,
@@ -68,6 +80,10 @@ class QaServiceTest < Minitest::Test
     result = service.answer(question: "what happened?")
 
     assert_match "LLM summarization unavailable", result[:answer]
+    assert_match "organization: Mappedin", result[:answer]
+    assert_match "category: work_experience", result[:answer]
+    assert_match "period: 2025-01 to 2026-01", result[:answer]
+    assert_match "tags: snowflake, etl", result[:answer]
     assert_match "worked on Y", result[:answer]
   end
 end

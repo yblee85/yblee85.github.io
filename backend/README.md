@@ -8,7 +8,7 @@ Backend Ruby app that answers portfolio questions using retrieval + optional Cla
 
 - app runtime: Ruby + Sinatra
 - retrieval: in-memory vectors (no external vector DB required)
-- embeddings: local Hugging Face Text Embeddings Inference (HTTP, usually in Docker)
+- embeddings: provider-based (`tei` local service or `voyage` public API)
 - answer synthesis: Claude API
 - data source: JSON files under `external/data`
 
@@ -25,7 +25,7 @@ At startup:
 
 1. Load all JSON files from `ABOUTME_DATA_DIR_PATH`
 2. Split each `content` into character chunks (configurable)
-3. Build vectors in memory using local embedding service
+3. Build vectors in memory using configured embedding provider
 4. On request, retrieve top-k docs by cosine similarity
 5. Optionally send contexts + question to Claude for final response
 
@@ -42,7 +42,10 @@ Dependency:
 Recommended env flags:
 
 - `ABOUTME_DATA_DIR_PATH` path to JSON data files
-- `EMBEDDING_BASE_URL` local embedding service URL
+- `EMBEDDING_PROVIDER` embedding backend (`tei` or `voyage`; default `tei`)
+- `EMBEDDING_BASE_URL` local embedding service URL (required when provider=`tei`)
+- `VOYAGE_API_KEY` Voyage API key (required when provider=`voyage`)
+- `VOYAGE_MODEL` Voyage model ID (default `voyage-4-lite`)
 - `EMBEDDING_STARTUP_TIMEOUT_SECS` wait time for embedding service readiness (default `120`)
 - `ANTHROPIC_API_KEY` optional, for final answer synthesis
 - `RAG_CHUNK_SIZE_CHARS` character chunk size (default `2000`)
@@ -61,10 +64,13 @@ cd backend
 docker compose up --build
 ```
 
-Services:
+Services (for local `tei` provider):
 
 - `backend` on `http://localhost:3001`
 - `embeddings` on `http://localhost:8080`
+
+When using `voyage`, set `EMBEDDING_PROVIDER=voyage` and `VOYAGE_API_KEY`.
+In that mode, the backend does not depend on the local `embeddings` container.
 
 ### Startup data sync from private GitHub repo (optional)
 
