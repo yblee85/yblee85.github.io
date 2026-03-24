@@ -67,4 +67,5 @@ else
   echo "[startup] Skipping local embeddings wait (EMBEDDING_PROVIDER=${EMBEDDING_PROVIDER})"
 fi
 
-exec bundle exec puma -C /dev/null -p 3000 config.ru
+PORT="${PORT:-3000}"
+exec bundle exec puma -C /dev/null -b "tcp://0.0.0.0:${PORT}" config.ru
