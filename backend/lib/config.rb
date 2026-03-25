@@ -53,6 +53,47 @@ module Config
     ENV.fetch("APP_PERMITTED_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
   end
 
+  def auth0_domain
+    string("AUTH0_DOMAIN", default: "")
+  end
+
+  def auth0_client_id
+    string("AUTH0_CLIENT_ID", default: "")
+  end
+
+  def auth0_client_secret
+    ENV["AUTH0_CLIENT_SECRET"].to_s
+  end
+
+  def auth0_callback_url
+    string("AUTH0_CALLBACK_URL", default: "")
+  end
+
+  # Full URL Auth0 must allow (Regular Web App); default matches omniauth-auth0 callback_path.
+  def auth0_expected_callback_url_hint
+    return auth0_callback_url unless auth0_callback_url.strip.empty?
+
+    "https://YOUR_API_HOST/auth/auth0/callback"
+  end
+
+  def frontend_origin
+    string("FRONTEND_ORIGIN", default: "http://localhost:3000")
+  end
+
+  def cors_origins
+    frontend_origin.split(",").map(&:strip).reject(&:empty?)
+  end
+
+  def session_secret
+    ENV.fetch("SESSION_SECRET") { "dev-session-secret-change-me" }
+  end
+
+  def auth0_configured?
+    !auth0_domain.strip.empty? &&
+      !auth0_client_id.strip.empty? &&
+      !auth0_client_secret.strip.empty?
+  end
+
   def validate_runtime!
     validate_embedding_provider!
     runtime_check_required_keys!
