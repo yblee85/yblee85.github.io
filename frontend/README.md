@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# yblee85.github.io
 
-## Getting Started
+Personal site (Next.js) for [https://yblee85.github.io/](https://yblee85.github.io/).
 
-First, run the development server:
+## Local dev
+
+Copy `.env.example` and paste into `.env`
 
 ```bash
+cd frontend
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build (static export)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses **`output: "export"`** so it can be hosted on **GitHub Pages** (static files only).
 
-## Learn More
+```bash
+cd frontend
+npm ci
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+Output is **`frontend/out/`** (ignored by git). Do not commit it; CI builds on each push.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy to GitHub Pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push this repo to GitHub (branch **`main`**).
+2. In the repo on GitHub: **Settings → Pages**.
+3. Under **Build and deployment → Source**, choose **GitHub Actions** (not “Deploy from a branch” unless you use a manual `docs/` flow).
+4. The workflow **Deploy to GitHub Pages** (`.github/workflows/deploy-github-pages.yml`) will:
+   - install deps and run `npm run build` in **`frontend/`**
+   - upload **`frontend/out`** as the site root for **`https://yblee85.github.io/`**
 
-## Deploy on Vercel
+Because this is the **`username.github.io`** repository, the site is served from the **root** — no `basePath` is set in Next.js.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Manual deploy (optional)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you prefer not to use Actions, you can build locally and publish the contents of `frontend/out/` to the **`gh-pages`** branch or copy them into a **`docs/`** folder on `main` and set Pages to that folder (not recommended if you already use Actions).
+
+## Project layout
+
+- **`frontend/`** — Next.js app (App Router).
+- **`frontend/public/`** — static assets (images, etc.) served as `/media/...`, etc.

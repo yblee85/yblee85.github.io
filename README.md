@@ -1,45 +1,41 @@
 # yblee85.github.io
 
-Personal site (Next.js) for [https://yblee85.github.io/](https://yblee85.github.io/).
+My portfolio site [https://yblee85.github.io/](https://yblee85.github.io/).
 
-## Local dev
+# Overview
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+It conists of 2 parts;
 
-Open [http://localhost:3000](http://localhost:3000).
+1. `frontend`(next.js app) that serves my portfolio page. One of features are `Chat with my agent` which you can ask anything about me and it will respond based on given context that are based on my experience.
+Hosted in github page
 
-## Build (static export)
+2. `backend`(ruby) REST api that has `/api/chat` endpoint which receives a question from a client and generates response using claude. Contexts (My personal experience) are downloaded separately using github personal access token.
+Hosted in digitalocean (App Platform)
 
-This project uses **`output: "export"`** so it can be hosted on **GitHub Pages** (static files only).
+# Getting started
 
-```bash
-cd frontend
-npm ci
-npm run build
-```
+## Prerequisite
 
-Output is **`frontend/out/`** (ignored by git). Do not commit it; CI builds on each push.
+1. Anthropic API key: to generate answer based on given context
 
-## Deploy to GitHub Pages
+2. Voyage AI API key (embeddings): to generate text embeddings for semantic search/retrieval in the RAG pipeline.
 
-1. Push this repo to GitHub (branch **`main`**).
-2. In the repo on GitHub: **Settings → Pages**.
-3. Under **Build and deployment → Source**, choose **GitHub Actions** (not “Deploy from a branch” unless you use a manual `docs/` flow).
-4. The workflow **Deploy to GitHub Pages** (`.github/workflows/deploy-github-pages.yml`) will:
-   - install deps and run `npm run build` in **`frontend/`**
-   - upload **`frontend/out`** as the site root for **`https://yblee85.github.io/`**
+   - Alternatively, we can run embedding server locally using hugginface. (`backend/docker-compose.yml`)
 
-Because this is the **`username.github.io`** repository, the site is served from the **root** — no `basePath` is set in Next.js.
+3. auth0 (IdP): `Chat with my agent` tab is a protected route and requires oauth2 login (google, github, linkedin)
 
-### Manual deploy (optional)
+4. At least one of following upstream IdPs
 
-If you prefer not to use Actions, you can build locally and publish the contents of `frontend/out/` to the **`gh-pages`** branch or copy them into a **`docs/`** folder on `main` and set Pages to that folder (not recommended if you already use Actions).
+   - Google Developer console account (Auth Platform): if you want `sign in with google`
 
-## Project layout
+   - Github OAuth app (Developer settings): if you want `sign in with github`
 
-- **`frontend/`** — Next.js app (App Router).
-- **`frontend/public/`** — static assets (images, etc.) served as `/media/...`, etc.
+   - Linkedin Developer, Company page: if you want `sign in with linkedin`
+
+## Run demo
+
+1. Run `backend`; see [Docker (local + production-friendly)](backend/README.md#docker-local--production-friendly).
+
+2. Run `frontend`; see [Local dev](frontend/README.md#local-dev).
+
+3. Visit [http://localhost:3000](http://localhost:3000).
