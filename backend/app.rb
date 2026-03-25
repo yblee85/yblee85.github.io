@@ -21,11 +21,12 @@ class PortfolioApi < Sinatra::Base
     permitted_hosts = [
       *Config.app_permitted_hosts
     ]
-    if Config.rack_env != "production"
-      permitted_hosts.concat([".localhost", "localhost", "127.0.0.1", "0.0.0.0"])
-    end
+    permitted_hosts.push(".localhost", "localhost", "127.0.0.1", "0.0.0.0") if Config.rack_env != "production"
 
-    set :host_authorization, { permitted_hosts: permitted_hosts }
+    set :host_authorization, {
+      permitted_hosts: permitted_hosts,
+      allow_if: ->(env) { ["/health", "/"].include?(env["PATH_INFO"]) }
+    }
     set :bind, "0.0.0.0"
     set :port, Config.app_port
   end
@@ -60,6 +61,12 @@ class PortfolioApi < Sinatra::Base
     llm_client: Llm::AnthropicClient.new
   )
 
+  get "/" do
+    {
+      ok: true
+    }.to_json
+  end
+
   get "/health" do
     {
       ok: true,
@@ -70,7 +77,6 @@ class PortfolioApi < Sinatra::Base
     }.to_json
   end
 
-  # TODO: Enable chat later
   post "/api/chat" do
     payload = JSON.parse(request.body.read)
     message = payload["message"].to_s.strip
