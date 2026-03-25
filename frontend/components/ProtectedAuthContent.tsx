@@ -2,6 +2,7 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { getApiBaseUrl } from "@/lib/api";
+import { FormEvent, useState } from "react";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -62,6 +63,10 @@ function logoutUrl(): string | null {
 export default function ProtectedAuthContent() {
   const { loading, authenticated, user } = useAuth();
   const base = getApiBaseUrl();
+  const [message, setMessage] = useState("");
+  const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [chat, setChat] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
 
   if (!base) {
     return (
@@ -80,7 +85,7 @@ export default function ProtectedAuthContent() {
     return (
       <div className="mx-auto max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Protected</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Chat with my agent</h1>
           <p className="mt-2 text-sm text-gray-500">
             Sign in with Google, GitHub, or LinkedIn to continue.
           </p>
@@ -133,21 +138,105 @@ export default function ProtectedAuthContent() {
     );
   }
 
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const text = message.trim();
+    if (!text || !base || isSending) return;
+
+    setError(null);
+    setIsSending(true);
+    setChat((prev) => [...prev, { role: "user", content: text }]);
+    setMessage("");
+
+    try {
+      const res = await fetch(`${base}/api/chat`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: text }),
+      });
+
+      if (!res.ok) {
+        const payload = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(payload.error || "Failed to get response from backend");
+      }
+
+      const payload = (await res.json()) as { answer?: string };
+      setChat((prev) => [
+        ...prev,
+        { role: "assistant", content: payload.answer || "No answer returned." },
+      ]);
+    } catch (e) {
+      const messageText = e instanceof Error ? e.message : "Request failed";
+      setError(messageText);
+    } finally {
+      setIsSending(false);
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-2xl font-bold tracking-tight">Protected</h1>
-      <p className="text-sm text-gray-600">You have logged in</p>
-      {user?.name ? <p className="text-sm text-gray-500">Signed in as {user.name}</p> : null}
-      <button
-        type="button"
-        onClick={() => {
-          const url = logoutUrl();
-          if (url) window.location.assign(url);
-        }}
-        className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
-      >
-        Log out
-      </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Chat with my agent</h1>
+          <p className="text-sm text-gray-600">Ask about my background and experience.</p>
+          {user?.name ? <p className="text-xs text-gray-500">Signed in as {user.name}</p> : null}
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            const url = logoutUrl();
+            if (url) window.location.assign(url);
+          }}
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          Log out
+        </button>
+      </div>
+
+      <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
+        <div className="space-y-3 max-h-[420px] overflow-y-auto">
+          {chat.length === 0 ? (
+            <p className="text-sm text-gray-600">Start by asking a question below.</p>
+          ) : (
+            chat.map((item, index) => (
+              <div
+                key={`${item.role}-${index}`}
+                className={`rounded-lg px-4 py-3 text-sm ${
+                  item.role === "user"
+                    ? "ml-6 bg-white border border-gray-200"
+                    : "mr-6 bg-indigo-100 border border-indigo-200"
+                }`}
+              >
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                  {item.role === "user" ? "You" : "Agent"}
+                </p>
+                <p className="whitespace-pre-wrap text-gray-800">{item.content}</p>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      <form onSubmit={onSubmit} className="space-y-3">
+        <textarea
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          placeholder="Ask me anything..."
+          rows={4}
+          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
+        />
+        <div className="flex items-center justify-between gap-3">
+          {error ? <p className="text-sm text-red-600">{error}</p> : <span />}
+          <button
+            type="submit"
+            disabled={isSending || message.trim().length === 0}
+            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-indigo-700"
+          >
+            {isSending ? "Sending..." : "Send"}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
