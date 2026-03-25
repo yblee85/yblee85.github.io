@@ -14,21 +14,19 @@ describe("Protected page", () => {
     vi.unstubAllEnvs();
   });
 
-  it("shows setup instructions when Auth0 env vars are missing", async () => {
-    vi.stubEnv("NEXT_PUBLIC_AUTH0_DOMAIN", "");
-    vi.stubEnv("NEXT_PUBLIC_AUTH0_CLIENT_ID", "");
+  it("shows setup instructions when NEXT_PUBLIC_API_URL is missing", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "");
 
     const { default: ProtectedPage } = await import("@/app/protected/page");
     render(<ProtectedPage />);
 
     expect(screen.getByRole("heading", { name: "Protected" })).toBeInTheDocument();
-    expect(screen.getByText(/Auth0 is not configured yet/)).toBeInTheDocument();
+    expect(screen.getByText(/NEXT_PUBLIC_API_URL/)).toBeInTheDocument();
     expect(screen.queryByTestId("protected-auth-mock")).not.toBeInTheDocument();
   });
 
-  it("renders ProtectedAuthContent when Auth0 env vars are set", async () => {
-    vi.stubEnv("NEXT_PUBLIC_AUTH0_DOMAIN", "dev-example.us.auth0.com");
-    vi.stubEnv("NEXT_PUBLIC_AUTH0_CLIENT_ID", "test_client_id");
+  it("renders ProtectedAuthContent when NEXT_PUBLIC_API_URL is set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_API_URL", "https://api.example.com");
 
     const { default: ProtectedPage } = await import("@/app/protected/page");
     render(<ProtectedPage />);

@@ -1,7 +1,7 @@
 "use client";
 
-import { useAuth0 } from "@auth0/auth0-react";
-import { useEffect } from "react";
+import { useAuth } from "@/components/AuthProvider";
+import { getApiBaseUrl } from "@/lib/api";
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -42,27 +42,45 @@ function LinkedInIcon({ className }: { className?: string }) {
   );
 }
 
+function loginUrl(connection: string): string | null {
+  const base = getApiBaseUrl();
+  if (!base || typeof window === "undefined") return null;
+  const u = new URL(`${base}/auth/login`);
+  u.searchParams.set("connection", connection);
+  u.searchParams.set("return_to", window.location.href);
+  return u.toString();
+}
+
+function logoutUrl(): string | null {
+  const base = getApiBaseUrl();
+  if (!base || typeof window === "undefined") return null;
+  const u = new URL(`${base}/auth/logout`);
+  u.searchParams.set("return_to", `${window.location.origin}/protected`);
+  return u.toString();
+}
+
 export default function ProtectedAuthContent() {
-  const { isAuthenticated, isLoading, user, loginWithRedirect, logout } = useAuth0();
+  const { loading, authenticated, user } = useAuth();
+  const base = getApiBaseUrl();
 
-  useEffect(() => {
-    if (isLoading) return;
-    const loggedIn = isAuthenticated ? "true" : "false";
-    localStorage.setItem("auth0_logged_in", loggedIn);
-    window.dispatchEvent(new Event("auth-changed"));
-  }, [isAuthenticated, isLoading]);
+  if (!base) {
+    return (
+      <p className="text-sm text-gray-600">
+        Set <code className="rounded bg-gray-100 px-1">NEXT_PUBLIC_API_URL</code> to your API origin
+        (e.g. <code className="rounded bg-gray-100 px-1">https://api.example.com</code>).
+      </p>
+    );
+  }
 
-  if (isLoading) {
+  if (loading) {
     return <p className="text-sm text-gray-500">Checking authentication...</p>;
   }
 
-  if (!isAuthenticated) {
+  if (!authenticated) {
     return (
       <div className="mx-auto max-w-md space-y-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-            Protected
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">Protected</h1>
           <p className="mt-2 text-sm text-gray-500">
             Sign in with Google, GitHub, or LinkedIn to continue.
           </p>
@@ -75,11 +93,10 @@ export default function ProtectedAuthContent() {
           <div className="flex flex-col gap-3">
             <button
               type="button"
-              onClick={() =>
-                loginWithRedirect({
-                  authorizationParams: { connection: "google-oauth2" },
-                })
-              }
+              onClick={() => {
+                const url = loginUrl("google-oauth2");
+                if (url) window.location.assign(url);
+              }}
               className="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-50 hover:shadow"
               aria-label="Sign in with Google"
             >
@@ -88,11 +105,10 @@ export default function ProtectedAuthContent() {
             </button>
             <button
               type="button"
-              onClick={() =>
-                loginWithRedirect({
-                  authorizationParams: { connection: "github" },
-                })
-              }
+              onClick={() => {
+                const url = loginUrl("github");
+                if (url) window.location.assign(url);
+              }}
               className="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-800 bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
               aria-label="Sign in with GitHub"
             >
@@ -101,12 +117,10 @@ export default function ProtectedAuthContent() {
             </button>
             <button
               type="button"
-              onClick={() =>
-                loginWithRedirect({
-                  // Must match the connection name in Auth0 (often "linkedin" or "linkedin-oauth2").
-                  authorizationParams: { connection: "linkedin" },
-                })
-              }
+              onClick={() => {
+                const url = loginUrl("linkedin");
+                if (url) window.location.assign(url);
+              }}
               className="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#004182]"
               aria-label="Sign in with LinkedIn"
             >
@@ -127,9 +141,8 @@ export default function ProtectedAuthContent() {
       <button
         type="button"
         onClick={() => {
-          localStorage.setItem("auth0_logged_in", "false");
-          window.dispatchEvent(new Event("auth-changed"));
-          logout({ logoutParams: { returnTo: `${window.location.origin}/protected/` } });
+          const url = logoutUrl();
+          if (url) window.location.assign(url);
         }}
         className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:bg-gray-50"
       >
