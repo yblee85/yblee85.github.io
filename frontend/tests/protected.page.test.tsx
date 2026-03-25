@@ -17,8 +17,8 @@ describe("Protected page", () => {
   it("shows setup instructions when NEXT_PUBLIC_API_URL is missing", async () => {
     vi.stubEnv("NEXT_PUBLIC_API_URL", "");
 
-    const { default: ProtectedPage } = await import("@/app/protected/page");
-    render(<ProtectedPage />);
+    const { default: ChatPage } = await import("@/app/chat/page");
+    render(<ChatPage />);
 
     expect(screen.getByRole("heading", { name: "Chat with my agent" })).toBeInTheDocument();
     expect(screen.getByText(/NEXT_PUBLIC_API_URL/)).toBeInTheDocument();
@@ -28,8 +28,8 @@ describe("Protected page", () => {
   it("renders ProtectedAuthContent when NEXT_PUBLIC_API_URL is set", async () => {
     vi.stubEnv("NEXT_PUBLIC_API_URL", "https://api.example.com");
 
-    const { default: ProtectedPage } = await import("@/app/protected/page");
-    render(<ProtectedPage />);
+    const { default: ChatPage } = await import("@/app/chat/page");
+    render(<ChatPage />);
 
     expect(screen.getByTestId("protected-auth-mock")).toBeInTheDocument();
   });
