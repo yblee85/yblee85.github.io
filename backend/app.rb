@@ -18,6 +18,14 @@ end
 
 class PortfolioApi < Sinatra::Base
   configure do
+    permitted_hosts = [
+      *Config.app_permitted_hosts
+    ]
+    if Config.rack_env != "production"
+      permitted_hosts.concat([".localhost", "localhost", "127.0.0.1", "0.0.0.0"])
+    end
+
+    set :host_authorization, { permitted_hosts: permitted_hosts }
     set :bind, "0.0.0.0"
     set :port, Config.app_port
   end

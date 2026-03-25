@@ -45,6 +45,14 @@ module Config
     string("ANTHROPIC_MODEL", default: "claude-haiku-4-5")
   end
 
+  def rack_env
+    string("RACK_ENV", default: "development")
+  end
+
+  def app_permitted_hosts
+    ENV.fetch("APP_PERMITTED_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
+  end
+
   def validate_runtime!
     validate_embedding_provider!
     runtime_check_required_keys!
