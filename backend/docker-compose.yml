@@ -3,18 +3,10 @@ services:
     build:
       context: .
     container_name: portfolio-backend
+    env_file:
+      - .env
     environment:
       PORT: "3000"
-      ABOUTME_DATA_DIR_PATH: ${ABOUTME_DATA_DIR_PATH:-./external/data}
-      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-tei}
-      EMBEDDING_BASE_URL: ${EMBEDDING_BASE_URL:-http://embeddings:80}
-      VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
-      VOYAGE_MODEL: ${VOYAGE_MODEL:-voyage-3-lite}
-      GITHUB_ACCESS_TOKEN: ${GITHUB_ACCESS_TOKEN:-}
-      ABOUTME_DATA_GITHUB_REPO_NAME: ${ABOUTME_DATA_GITHUB_REPO_NAME:-}
-      ABOUTME_DATA_GITHUB_BRANCH: ${ABOUTME_DATA_GITHUB_BRANCH:-main}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
     ports:
       - "3001:3000"
     depends_on:
