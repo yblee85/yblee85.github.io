@@ -31,17 +31,14 @@ jobs:
 
       - name: Validate required public env vars
         env:
-          NEXT_PUBLIC_AUTH0_DOMAIN: ${{ secrets.NEXT_PUBLIC_AUTH0_DOMAIN }}
-          NEXT_PUBLIC_AUTH0_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_AUTH0_CLIENT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: |
-          test -n "$NEXT_PUBLIC_AUTH0_DOMAIN" || (echo "Missing NEXT_PUBLIC_AUTH0_DOMAIN" && exit 1)
-          test -n "$NEXT_PUBLIC_AUTH0_CLIENT_ID" || (echo "Missing NEXT_PUBLIC_AUTH0_CLIENT_ID" && exit 1)
+          test -n "$NEXT_PUBLIC_API_URL" || (echo "Missing NEXT_PUBLIC_API_URL (backend origin)" && exit 1)
 
       - name: Install and build
         working-directory: frontend
         env:
-          NEXT_PUBLIC_AUTH0_DOMAIN: ${{ secrets.NEXT_PUBLIC_AUTH0_DOMAIN }}
-          NEXT_PUBLIC_AUTH0_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_AUTH0_CLIENT_ID }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: npm ci && npm run build
 
       - name: Upload Pages artifact

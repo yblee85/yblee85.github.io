@@ -16,8 +16,8 @@ describe("Nav", () => {
     expect(screen.queryByRole("link", { name: "Protected" })).not.toBeInTheDocument();
   });
 
-  it("shows Protected tab when auth0_logged_in is true", async () => {
-    localStorage.setItem("auth0_logged_in", "true");
+  it("shows Protected tab when auth_session_logged_in is true", async () => {
+    localStorage.setItem("auth_session_logged_in", "true");
     render(<Nav />);
 
     await waitFor(() => {

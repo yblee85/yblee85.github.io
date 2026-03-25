@@ -6,6 +6,9 @@ gem "puma", "~> 6.4"
 gem "langchainrb", "~> 0.19.5"
 gem "anthropic", "~> 0.3.2"
 gem "rake", "~> 13.2"
+gem "rack-cors", "~> 2.0"
+gem "omniauth", "~> 2.1"
+gem "omniauth-auth0", "~> 3.1"
 
 group :development do
   gem "rubocop", "~> 1.72", require: false

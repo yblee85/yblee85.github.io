@@ -1,31 +1,94 @@
 "use client";
 
-import { Auth0Provider } from "@auth0/auth0-react";
-import type { PropsWithChildren } from "react";
+import { getApiBaseUrl } from "@/lib/api";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from "react";
 
-const domain = process.env.NEXT_PUBLIC_AUTH0_DOMAIN;
-const clientId = process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID;
+export type SessionUser = {
+  sub?: string;
+  name?: string;
+  email?: string;
+  picture?: string;
+};
+
+type AuthContextValue = {
+  loading: boolean;
+  authenticated: boolean;
+  user: SessionUser | null;
+  refresh: () => Promise<void>;
+};
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error("useAuth must be used within AuthProvider");
+  }
+  return ctx;
+}
+
+function setNavSessionFlag(authenticated: boolean) {
+  if (typeof window === "undefined") return;
+  localStorage.setItem("auth_session_logged_in", authenticated ? "true" : "false");
+  window.dispatchEvent(new Event("auth-changed"));
+}
 
 export default function AuthProvider({ children }: PropsWithChildren) {
-  // Keep local/dev builds working even when Auth0 env vars are not set.
-  if (!domain || !clientId) {
-    return <>{children}</>;
-  }
+  const [loading, setLoading] = useState(true);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [user, setUser] = useState<SessionUser | null>(null);
 
-  return (
-    <Auth0Provider
-      domain={domain}
-      clientId={clientId}
-      authorizationParams={{
-        redirect_uri:
-          typeof window !== "undefined"
-            ? `${window.location.origin}/protected/`
-            : undefined,
-      }}
-      cacheLocation="localstorage"
-      useRefreshTokens
-    >
-      {children}
-    </Auth0Provider>
+  const refresh = useCallback(async () => {
+    const base = getApiBaseUrl();
+    if (!base) {
+      setAuthenticated(false);
+      setUser(null);
+      setLoading(false);
+      setNavSessionFlag(false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${base}/auth/me`, { credentials: "include" });
+      const data = (await res.json()) as {
+        authenticated?: boolean;
+        user?: SessionUser;
+      };
+
+      if (res.ok && data.authenticated && data.user) {
+        setAuthenticated(true);
+        setUser(data.user);
+        setNavSessionFlag(true);
+      } else {
+        setAuthenticated(false);
+        setUser(null);
+        setNavSessionFlag(false);
+      }
+    } catch {
+      setAuthenticated(false);
+      setUser(null);
+      setNavSessionFlag(false);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refresh();
+  }, [refresh]);
+
+  const value = useMemo(
+    () => ({ loading, authenticated, user, refresh }),
+    [loading, authenticated, user, refresh],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

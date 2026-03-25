@@ -17,7 +17,7 @@ export default function Nav() {
 
   useEffect(() => {
     const readAuth = () => {
-      setShowProtected(localStorage.getItem("auth0_logged_in") === "true");
+      setShowProtected(localStorage.getItem("auth_session_logged_in") === "true");
     };
 
     readAuth();
