@@ -12,11 +12,11 @@ describe("Nav", () => {
     expect(screen.getByRole("link", { name: "Chat with my agent" })).toBeInTheDocument();
   });
 
-  it("chat tab links to /protected", async () => {
+  it("chat tab links to /chat", async () => {
     render(<Nav />);
     expect(screen.getByRole("link", { name: "Chat with my agent" })).toHaveAttribute(
       "href",
-      "/protected",
+      "/chat",
     );
   });
 

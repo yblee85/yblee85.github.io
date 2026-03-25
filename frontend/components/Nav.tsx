@@ -7,7 +7,7 @@ const tabs = [
   { label: "Home", href: "/" },
   { label: "Career", href: "/career" },
   { label: "MyThing", href: "/my-thing" },
-  { label: "Chat with my agent", href: "/protected", emphasize: true },
+  { label: "Chat with my agent", href: "/chat", emphasize: true },
 ];
 
 export default function Nav() {

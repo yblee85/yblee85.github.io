@@ -56,7 +56,7 @@ function logoutUrl(): string | null {
   const base = getApiBaseUrl();
   if (!base || typeof window === "undefined") return null;
   const u = new URL(`${base}/auth/logout`);
-  u.searchParams.set("return_to", `${window.location.origin}/protected`);
+  u.searchParams.set("return_to", `${window.location.origin}/chat`);
   return u.toString();
 }
 
