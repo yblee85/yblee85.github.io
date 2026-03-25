@@ -1,5 +1,7 @@
 require "json"
 require "sinatra/base"
+require "omniauth"
+require "omniauth-auth0"
 
 require_relative "lib/config"
 require_relative "lib/data/document_loader"
@@ -8,6 +10,7 @@ require_relative "lib/embeddings/voyage_client"
 require_relative "lib/vector/in_memory_index"
 require_relative "lib/llm/anthropic_client"
 require_relative "lib/rag/qa_service"
+require_relative "lib/auth/web_routes"
 
 begin
   Config.validate_runtime!
@@ -17,7 +20,33 @@ rescue Config::ValidationError => e
 end
 
 class PortfolioApi < Sinatra::Base
+  # Register OmniAuth before enable :sessions so Rack prepends Session on top of OmniAuth
+  # (Session -> OmniAuth -> Sinatra); OmniAuth needs the session for OAuth state.
+  if Config.auth0_configured?
+    use OmniAuth::Builder do
+      provider :auth0,
+               Config.auth0_client_id,
+               Config.auth0_client_secret,
+               Config.auth0_domain,
+               {
+                 callback_path: "/auth/auth0/callback",
+                 scope: "openid profile email"
+               }
+    end
+  end
+
+  register Auth::WebRoutes
+
   configure do
+    OmniAuth.config.allowed_request_methods = %i[get post]
+
+    enable :sessions
+    set :sessions,
+        secret: Config.session_secret,
+        httponly: true,
+        secure: Config.rack_env == "production",
+        same_site: Config.rack_env == "production" ? :none : :lax
+
     permitted_hosts = [
       *Config.app_permitted_hosts
     ]
@@ -25,14 +54,23 @@ class PortfolioApi < Sinatra::Base
 
     set :host_authorization, {
       permitted_hosts: permitted_hosts,
-      allow_if: ->(env) { ["/health", "/"].include?(env["PATH_INFO"]) }
+      allow_if: lambda { |env|
+        path = env["PATH_INFO"]
+        path == "/health" || path == "/" || path.start_with?("/auth")
+      }
     }
     set :bind, "0.0.0.0"
     set :port, Config.app_port
   end
 
   before do
-    content_type :json
+    p = request.path_info
+    unless p.start_with?("/auth/login") ||
+           p.start_with?("/auth/auth0") ||
+           p == "/auth/failure" ||
+           p.start_with?("/auth/logout")
+      content_type :json
+    end
   end
 
   DATA_DIR = Config.aboutme_data_dir_path
@@ -78,6 +116,8 @@ class PortfolioApi < Sinatra::Base
   end
 
   post "/api/chat" do
+    halt 401, { error: "authentication required" }.to_json if session[:user].nil?
+
     payload = JSON.parse(request.body.read)
     message = payload["message"].to_s.strip
     halt 400, { error: "message is required" }.to_json if message.empty?
