@@ -2,6 +2,8 @@ require "json"
 require "sinatra/base"
 require "omniauth"
 require "omniauth-auth0"
+require "digest"
+require "rack/session/pool"
 
 require_relative "lib/config"
 require_relative "lib/data/document_loader"
@@ -20,6 +22,14 @@ rescue Config::ValidationError => e
 end
 
 class PortfolioApi < Sinatra::Base
+  # Use a server-side session store so cookies stay small/stable.
+  use Rack::Session::Pool,
+      key: "rack.session",
+      path: "/",
+      httponly: true,
+      secure: Config.rack_env == "production",
+      same_site: Config.rack_env == "production" ? :none : :lax
+
   # Register OmniAuth before enable :sessions so Rack prepends Session on top of OmniAuth
   # (Session -> OmniAuth -> Sinatra); OmniAuth needs the session for OAuth state.
   if Config.auth0_configured?
@@ -37,15 +47,27 @@ class PortfolioApi < Sinatra::Base
 
   register Auth::WebRoutes
 
+  helpers do
+    def log_session_state(tag:)
+      cookie = request.env["HTTP_COOKIE"].to_s
+      rack_session_values = cookie.scan(/rack\.session=([^;]+)/).flatten
+      first = rack_session_values.first
+      last = rack_session_values.last
+      $stderr.puts(
+        "[session-debug] #{tag} method=#{request.request_method} path=#{request.path_info} " \
+        "origin=#{request.env['HTTP_ORIGIN'].inspect} " \
+        "rack_session_count=#{rack_session_values.length} " \
+        "rack_session_first_sha=#{first.nil? ? nil : Digest::SHA256.hexdigest(first)[0, 12]} " \
+        "rack_session_last_sha=#{last.nil? ? nil : Digest::SHA256.hexdigest(last)[0, 12]} " \
+        "session_user_present=#{!session[:user].nil?}"
+      )
+    rescue StandardError => e
+      $stderr.puts("[session-debug] #{tag} log_failed=#{e.class}: #{e.message}")
+    end
+  end
+
   configure do
     OmniAuth.config.allowed_request_methods = %i[get post]
-
-    enable :sessions
-    set :sessions,
-        secret: Config.session_secret,
-        httponly: true,
-        secure: Config.rack_env == "production",
-        same_site: Config.rack_env == "production" ? :none : :lax
 
     permitted_hosts = [
       *Config.app_permitted_hosts
@@ -64,6 +86,10 @@ class PortfolioApi < Sinatra::Base
   end
 
   before do
+    if request.path_info == "/auth/me" || request.path_info == "/api/chat"
+      log_session_state(tag: "before")
+    end
+
     p = request.path_info
     unless p.start_with?("/auth/login") ||
            p.start_with?("/auth/auth0") ||
@@ -116,6 +142,7 @@ class PortfolioApi < Sinatra::Base
   end
 
   post "/api/chat" do
+    log_session_state(tag: "chat")
     halt 401, { error: "authentication required" }.to_json if session[:user].nil?
 
     payload = JSON.parse(request.body.read)

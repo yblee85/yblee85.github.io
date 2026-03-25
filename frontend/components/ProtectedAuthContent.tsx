@@ -61,7 +61,7 @@ function logoutUrl(): string | null {
 }
 
 export default function ProtectedAuthContent() {
-  const { loading, authenticated, user } = useAuth();
+  const { loading, authenticated, user, refresh } = useAuth();
   const base = getApiBaseUrl();
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -149,6 +149,9 @@ export default function ProtectedAuthContent() {
     setMessage("");
 
     try {
+      // Ensure session cookie is up-to-date before calling /api/chat.
+      await refresh();
+
       const res = await fetch(`${base}/api/chat`, {
         method: "POST",
         credentials: "include",
