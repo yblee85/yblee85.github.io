@@ -120,8 +120,44 @@ describe("ProtectedAuthContent", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("You have logged in")).toBeInTheDocument();
+      expect(screen.getByText("Ask about my background and experience.")).toBeInTheDocument();
     });
     expect(screen.getByText(/signed in as test user/i)).toBeInTheDocument();
+  });
+
+  it("sends message to backend chat API and renders response", async () => {
+    global.fetch = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          authenticated: true,
+          user: { name: "Test User", email: "test@example.com" },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ answer: "Hello from backend" }),
+      });
+
+    render(
+      <AuthProvider>
+        <ProtectedAuthContent />
+      </AuthProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText("Ask me anything...")).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("Ask me anything..."), {
+      target: { value: "What did you work on?" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+    await waitFor(() => {
+      expect(screen.getByText("What did you work on?")).toBeInTheDocument();
+      expect(screen.getByText("Hello from backend")).toBeInTheDocument();
+    });
   });
 });

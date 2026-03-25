@@ -20,7 +20,7 @@ describe("Protected page", () => {
     const { default: ProtectedPage } = await import("@/app/protected/page");
     render(<ProtectedPage />);
 
-    expect(screen.getByRole("heading", { name: "Protected" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Chat with my agent" })).toBeInTheDocument();
     expect(screen.getByText(/NEXT_PUBLIC_API_URL/)).toBeInTheDocument();
     expect(screen.queryByTestId("protected-auth-mock")).not.toBeInTheDocument();
   });
