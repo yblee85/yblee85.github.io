@@ -1,33 +1,19 @@
 require "cgi"
-require "uri"
 require_relative "../config"
+require_relative "web_helpers"
 
 module Auth
   module WebRoutes
     def self.registered(app)
-      app.helpers do
-        def oauth_ready?
-          Config.auth0_configured?
-        end
+      app.helpers WebHelpers
+      register_login(app)
+      register_callback(app)
+      register_failure(app)
+      register_logout(app)
+      register_me(app)
+    end
 
-        def halt_oauth_not_configured
-          halt 503, { error: "OAuth is not configured on the server." }.to_json
-        end
-
-        def safe_return_to(url)
-          return Config.frontend_origin if url.nil? || url.strip.empty?
-
-          uri = URI.parse(url)
-          allowed = URI.parse(Config.frontend_origin.split(",").first.strip)
-          return url if uri.scheme == allowed.scheme && uri.host == allowed.host
-
-          Config.frontend_origin.split(",").first.strip
-        rescue URI::InvalidURIError
-          Config.frontend_origin.split(",").first.strip
-        end
-      end
-
-      # Stores return URL, then hands off to OmniAuth (/auth/auth0).
+    def self.register_login(app)
       app.get "/auth/login" do
         halt_oauth_not_configured unless oauth_ready?
 
@@ -39,55 +25,42 @@ module Auth
         session[:oauth_return_to] = safe_return_to(params["return_to"])
         redirect "/auth/auth0?connection=#{CGI.escape(connection)}"
       end
+    end
 
-      # OmniAuth sets request.env["omniauth.auth"] after Auth0 redirects here.
+    def self.register_callback(app)
       app.get "/auth/auth0/callback" do
         halt_oauth_not_configured unless oauth_ready?
 
         auth = request.env["omniauth.auth"]
         halt 401, { error: "authentication failed" }.to_json unless auth
 
-        info = auth["info"] || {}
-        session[:user] = {
-          "sub" => (auth["uid"] || info["sub"]).to_s,
-          "name" => info["name"],
-          "email" => info["email"],
-          "picture" => info["image"] || info["picture"]
-        }.compact
+        session[:user] = user_payload_from_omniauth(auth)
 
         return_to = session.delete(:oauth_return_to) || Config.frontend_origin.split(",").first.strip
         redirect return_to
       end
+    end
 
+    def self.register_failure(app)
       app.get "/auth/failure" do
         message = params["message"] || "unknown"
         halt 400, { error: "auth failure: #{message}" }.to_json
       end
+    end
 
+    def self.register_logout(app)
       app.get "/auth/logout" do
         return_to = safe_return_to(params["return_to"])
         session.clear
+        redirect return_to unless oauth_ready?
 
-        unless oauth_ready?
-          redirect return_to
-          return
-        end
-
-        logout_url = URI::HTTPS.build(
-          host: Config.auth0_domain,
-          path: "/v2/logout",
-          query: URI.encode_www_form(
-            "client_id" => Config.auth0_client_id,
-            "returnTo" => return_to
-          )
-        ).to_s
-        redirect logout_url
+        redirect auth0_logout_url(return_to)
       end
+    end
 
+    def self.register_me(app)
       app.get "/auth/me" do
-        if session[:user].nil?
-          halt 401, { authenticated: false }.to_json
-        end
+        halt 401, { authenticated: false }.to_json if session[:user].nil?
 
         { authenticated: true, user: session[:user] }.to_json
       end
