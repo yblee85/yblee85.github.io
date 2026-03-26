@@ -9,7 +9,7 @@ module Auth
 
     # Returns true if the user is not rate limited and the visit is recorded, false otherwise.
     def record_visit(user_id)
-      rate_limited = is_rate_limited?(user_id)
+      rate_limited = rate_limited?(user_id)
       return false if rate_limited
 
       visits_in_past_hour = get_past_hour_timestamps(user_id)
@@ -19,7 +19,7 @@ module Auth
     end
 
     # Returns true if the user is rate limited, false otherwise.
-    def is_rate_limited?(user_id)
+    def rate_limited?(user_id)
       visits_in_past_hour = get_past_hour_timestamps(user_id)
       return false if visits_in_past_hour.length < @max_requests_per_hour_per_user
 

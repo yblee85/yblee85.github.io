@@ -12,12 +12,12 @@ class RateLimiterTest < Minitest::Test
     assert_equal false, limiter.record_visit("user@example.com")
   end
 
-  def test_is_rate_limited_reflects_current_count
+  def test_rate_limited_reflects_current_count
     limiter = Auth::RateLimiter.new(max_requests_per_hour_per_user: 1)
 
-    refute limiter.is_rate_limited?("user@example.com")
+    refute limiter.rate_limited?("user@example.com")
     assert limiter.record_visit("user@example.com")
-    assert limiter.is_rate_limited?("user@example.com")
+    assert limiter.rate_limited?("user@example.com")
   end
 
   def test_old_visits_are_pruned_before_limit_check
@@ -27,10 +27,10 @@ class RateLimiterTest < Minitest::Test
     cache.set("user@example.com", [now_ms - 3_600_001, now_ms - 1_000])
 
     limiter.stub(:current_timestamp, now_ms) do
-      refute limiter.is_rate_limited?("user@example.com")
+      refute limiter.rate_limited?("user@example.com")
       assert_equal [now_ms - 1_000], cache.get("user@example.com")
       assert limiter.record_visit("user@example.com")
-      assert limiter.is_rate_limited?("user@example.com")
+      assert limiter.rate_limited?("user@example.com")
     end
   end
 end

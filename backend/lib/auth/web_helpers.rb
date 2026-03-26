@@ -10,7 +10,8 @@ module Auth
     end
 
     def halt_oauth_not_configured
-      halt 503, Web::Response.error(code: "oauth_not_configured", message: "OAuth is not configured on the server.").to_json
+      halt 503,
+           Web::Response.error(code: "oauth_not_configured", message: "OAuth is not configured on the server.").to_json
     end
 
     def safe_return_to(url)

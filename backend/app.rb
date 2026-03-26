@@ -108,15 +108,18 @@ class PortfolioApi < Sinatra::Base
 
   get "/health" do
     Web::Response.success(data: {
-      docs: DOCUMENTS.length,
-      embedding_provider: EMBEDDING_PROVIDER,
-      chunk_size_chars: CHUNK_SIZE_CHARS,
-      chunk_overlap_percent: CHUNK_OVERLAP_PERCENT
-    }).to_json
+                            docs: DOCUMENTS.length,
+                            embedding_provider: EMBEDDING_PROVIDER,
+                            chunk_size_chars: CHUNK_SIZE_CHARS,
+                            chunk_overlap_percent: CHUNK_OVERLAP_PERCENT
+                          }).to_json
   end
 
   post "/api/chat" do
-    halt 401, Web::Response.error(code: "unauthorized", message: "authentication required").to_json if session[:user].nil?
+    if session[:user].nil?
+      halt 401,
+           Web::Response.error(code: "unauthorized", message: "authentication required").to_json
+    end
     user_email = session[:user]["email"].to_s.strip
     unless RATE_LIMITER.record_visit(user_email)
       halt 429, Web::Response.error(
