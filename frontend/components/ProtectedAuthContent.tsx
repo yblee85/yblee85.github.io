@@ -107,7 +107,7 @@ export default function ProtectedAuthContent() {
           <p className="mt-3">I do not (nor will I) collect your personal information anywhere.</p>
           <p className="mt-3">I made this page sign-in protected for 2 reasons:</p>
           <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li>To show future employers that I know a little bit about OAuth 2.0 flow.</li>
+            <li>I want some sort of verification to prevent abuse.</li>
             <li>I&apos;m super cheap, I don&apos;t want to be surprised by AI service fees.</li>
           </ol>
         </div>
@@ -179,16 +179,21 @@ export default function ProtectedAuthContent() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: text }),
       });
+      const body = (await res.json().catch(() => ({}))) as {
+        answer?: string;
+        error?: string | { message?: string };
+        data?: { answer?: string };
+        ok?: boolean;
+      };
 
       if (!res.ok) {
-        const payload = (await res.json().catch(() => ({}))) as { error?: string };
-        throw new Error(payload.error || "Failed to get response from backend");
+        const errorMessage =
+          typeof body.error === "string" ? body.error : body.error?.message;
+        throw new Error(errorMessage || "Failed to get response from backend");
       }
-
-      const payload = (await res.json()) as { answer?: string };
       setChat((prev) => [
         ...prev,
-        { role: "assistant", content: payload.answer || "No answer returned." },
+        { role: "assistant", content: body.data?.answer || body.answer || "No answer returned." },
       ]);
     } catch (e) {
       const messageText = e instanceof Error ? e.message : "Request failed";

@@ -35,6 +35,9 @@ Naming/PredicateMethod:
 Metrics/MethodLength:
   Enabled: false
 
+Metrics/ClassLength:
+  Enabled: false
+
 Metrics/AbcSize:
   Enabled: true
   Max: 35

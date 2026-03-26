@@ -11,6 +11,9 @@ require_relative "lib/embeddings/voyage_client"
 require_relative "lib/vector/in_memory_index"
 require_relative "lib/llm/anthropic_client"
 require_relative "lib/rag/qa_service"
+require_relative "lib/cache/local_store"
+require_relative "lib/web/response"
+require_relative "lib/auth/rate_limiter"
 require_relative "lib/auth/web_routes"
 
 begin
@@ -97,35 +100,46 @@ class PortfolioApi < Sinatra::Base
     embedder: EMBEDDER_FOR_QA,
     llm_client: Llm::AnthropicClient.new
   )
+  RATE_LIMITER = Auth::RateLimiter.new
 
   get "/" do
-    {
-      ok: true
-    }.to_json
+    Web::Response.success.to_json
   end
 
   get "/health" do
-    {
-      ok: true,
-      docs: DOCUMENTS.length,
-      embedding_provider: EMBEDDING_PROVIDER,
-      chunk_size_chars: CHUNK_SIZE_CHARS,
-      chunk_overlap_percent: CHUNK_OVERLAP_PERCENT
-    }.to_json
+    Web::Response.success(data: {
+                            docs: DOCUMENTS.length,
+                            embedding_provider: EMBEDDING_PROVIDER,
+                            chunk_size_chars: CHUNK_SIZE_CHARS,
+                            chunk_overlap_percent: CHUNK_OVERLAP_PERCENT
+                          }).to_json
   end
 
   post "/api/chat" do
-    halt 401, { error: "authentication required" }.to_json if session[:user].nil?
+    if session[:user].nil?
+      halt 401,
+           Web::Response.error(code: "unauthorized", message: "authentication required").to_json
+    end
+    user_email = session[:user]["email"].to_s.strip
+    unless RATE_LIMITER.record_visit(user_email)
+      halt 429, Web::Response.error(
+        code: "rate_limited",
+        message: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user"
+      ).to_json
+    end
 
     payload = JSON.parse(request.body.read)
     message = payload["message"].to_s.strip
-    halt 400, { error: "message is required" }.to_json if message.empty?
+    halt 400, Web::Response.error(code: "bad_request", message: "message is required").to_json if message.empty?
 
-    QA.answer(question: message).to_json
+    Web::Response.success(data: QA.answer(question: message)).to_json
   rescue Embeddings::VoyageClient::RateLimitError => e
-    halt 429, { error: "Voyage rate limit exceeded: #{e.message}" }.to_json
+    halt 429, Web::Response.error(
+      code: "voyage_rate_limited",
+      message: "Voyage rate limit exceeded: #{e.message}"
+    ).to_json
   rescue JSON::ParserError
-    halt 400, { error: "invalid JSON payload" }.to_json
+    halt 400, Web::Response.error(code: "bad_request", message: "invalid JSON payload").to_json
   end
 end
 
