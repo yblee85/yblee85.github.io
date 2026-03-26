@@ -39,6 +39,7 @@ jobs:
         working-directory: frontend
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+          NEXT_PUBLIC_PROFILE_PICTURE_URL: ${{ secrets.NEXT_PUBLIC_PROFILE_PICTURE_URL }}
         run: npm ci && npm run build
 
       - name: Upload Pages artifact
