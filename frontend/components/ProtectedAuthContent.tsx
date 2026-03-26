@@ -2,7 +2,10 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { getApiBaseUrl } from "@/lib/api";
-import { FormEvent, useState } from "react";
+import { Schoolbell } from "next/font/google";
+import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+
+const schoolbell = Schoolbell({ weight: "400", subsets: ["latin"] });
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -67,6 +70,12 @@ export default function ProtectedAuthContent() {
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chat, setChat] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
+  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const canSend = useMemo(() => !isSending && message.trim().length > 0, [isSending, message]);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ block: "end" });
+  }, [chat.length]);
 
   if (!base) {
     return (
@@ -83,15 +92,27 @@ export default function ProtectedAuthContent() {
 
   if (!authenticated) {
     return (
-      <div className="mx-auto max-w-md space-y-8">
-        <div className="text-center">
+      <div className="mx-auto w-full max-w-xl space-y-8">
+        <header className="text-left">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Chat with my agent</h1>
           <p className="mt-2 text-sm text-gray-500">
             Sign in with Google, GitHub, or LinkedIn to continue.
           </p>
+        </header>
+
+        <div className={`text-left text-[18px] leading-8 text-gray-600 ${schoolbell.className}`}>
+          <p className="font-medium text-gray-800">
+            Hi there, you&apos;re about to chat with my agent about my career history.
+          </p>
+          <p className="mt-3">I do not (nor will I) collect your personal information anywhere.</p>
+          <p className="mt-3">I made this page sign-in protected for 2 reasons:</p>
+          <ol className="mt-3 list-decimal space-y-2 pl-5">
+            <li>To show future employers that I know a little bit about OAuth 2.0 flow.</li>
+            <li>I&apos;m super cheap, I don&apos;t want to be surprised by AI service fees.</li>
+          </ol>
         </div>
 
-        <div className="rounded-xl border border-gray-200 bg-gray-50/80 p-6 shadow-sm">
+        <div className="w-full rounded-xl border border-gray-200 bg-gray-50/80 p-6 shadow-sm">
           <p className="mb-4 text-center text-xs font-medium uppercase tracking-wider text-gray-400">
             Continue with
           </p>
@@ -177,6 +198,15 @@ export default function ProtectedAuthContent() {
     }
   };
 
+  const onMessageKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Enter") return;
+    if (!event.ctrlKey && !event.metaKey) return;
+
+    event.preventDefault();
+    if (!canSend) return;
+    void onSubmit(event as unknown as FormEvent<HTMLFormElement>);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -218,6 +248,7 @@ export default function ProtectedAuthContent() {
               </div>
             ))
           )}
+          <div ref={bottomRef} />
         </div>
       </div>
 
@@ -225,6 +256,7 @@ export default function ProtectedAuthContent() {
         <textarea
           value={message}
           onChange={(event) => setMessage(event.target.value)}
+          onKeyDown={onMessageKeyDown}
           placeholder="Ask me anything..."
           rows={4}
           className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
@@ -233,7 +265,7 @@ export default function ProtectedAuthContent() {
           {error ? <p className="text-sm text-red-600">{error}</p> : <span />}
           <button
             type="submit"
-            disabled={isSending || message.trim().length === 0}
+            disabled={!canSend}
             className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-indigo-700"
           >
             {isSending ? "Sending..." : "Send"}

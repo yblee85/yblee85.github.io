@@ -1,14 +1,25 @@
 import { profile } from "@/media/me/aboutme";
 
 export default function Home() {
+  const profilePictureUrl = process.env.NEXT_PUBLIC_PROFILE_PICTURE_URL?.trim();
+
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold tracking-tight">{profile.name}</h1>
-        <p className="mt-2 text-lg text-gray-500">{profile.title}</p>
-        <p className="mt-4 max-w-3xl text-sm leading-7 text-gray-600">
-          {profile.description}
-        </p>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          {profilePictureUrl ? (
+            <img
+              src={profilePictureUrl}
+              alt={`${profile.name}`}
+              className="h-16 w-16 shrink-0 rounded-xl object-cover shadow-sm ring-1 ring-gray-200/80 sm:h-20 sm:w-20"
+            />
+          ) : null}
+          <div className="min-w-0 flex-1">
+            <h1 className="text-4xl font-bold tracking-tight">{profile.name}</h1>
+            <p className="mt-2 text-lg text-gray-500">{profile.title}</p>
+          </div>
+        </div>
+        <p className="max-w-3xl text-sm leading-7 text-gray-600">{profile.description}</p>
       </div>
 
       <div className="space-y-3">
