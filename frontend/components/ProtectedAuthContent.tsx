@@ -107,7 +107,7 @@ export default function ProtectedAuthContent() {
           <p className="mt-3">I do not (nor will I) collect your personal information anywhere.</p>
           <p className="mt-3">I made this page sign-in protected for 2 reasons:</p>
           <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li>To show future employers that I know a little bit about OAuth 2.0 flow.</li>
+            <li>I want some sort of verification to prevent abuse.</li>
             <li>I&apos;m super cheap, I don&apos;t want to be surprised by AI service fees.</li>
           </ol>
         </div>
