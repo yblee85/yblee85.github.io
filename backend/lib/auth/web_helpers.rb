@@ -1,4 +1,5 @@
 require "uri"
+require "digest"
 require_relative "../config"
 require_relative "../web/response"
 
@@ -39,12 +40,18 @@ module Auth
 
     def user_payload_from_omniauth(auth)
       info = auth["info"] || {}
+      email = info["email"].to_s.strip.downcase
       {
+        "user_id" => hash_value(email),
         "sub" => (auth["uid"] || info["sub"]).to_s,
         "name" => info["name"],
         "email" => info["email"],
         "picture" => info["image"] || info["picture"]
       }.compact
+    end
+
+    def hash_value(value)
+      value.empty? ? nil : Digest::SHA256.hexdigest(value)
     end
   end
 end

@@ -1,5 +1,3 @@
-require "digest"
-
 module Auth
   class RateLimiter
     def initialize(
@@ -10,8 +8,7 @@ module Auth
     end
 
     # Returns true if the user is not rate limited and the visit is recorded, false otherwise.
-    def record_visit(key)
-      user_id = hash_key(key)
+    def record_visit(user_id)
       rate_limited = rate_limited?(user_id)
       return false if rate_limited
 
@@ -22,8 +19,7 @@ module Auth
     end
 
     # Returns true if the user is rate limited, false otherwise.
-    def rate_limited?(key)
-      user_id = hash_key(key)
+    def rate_limited?(user_id)
       visits_in_past_hour = get_past_hour_timestamps(user_id)
       return false if visits_in_past_hour.length < @max_requests_per_hour_per_user
 
@@ -31,10 +27,6 @@ module Auth
     end
 
     private
-
-    def hash_key(key)
-      Digest::SHA256.hexdigest(key)
-    end
 
     def current_timestamp
       (Time.now.to_f * 1000).to_i
