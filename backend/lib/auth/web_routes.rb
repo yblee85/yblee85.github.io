@@ -37,8 +37,6 @@ module Auth
         return_to = session.delete(:oauth_return_to) || Config.frontend_origin.split(",").first.strip
         user = user_payload_from_omniauth(auth)
 
-        # Cookie sessions are size-limited; keep only what we need.
-        session.clear
         session[:user] = user
 
         redirect return_to

@@ -88,6 +88,10 @@ module Config
     ENV.fetch("SESSION_SECRET") { "dev-session-secret-change-me" }
   end
 
+  def chat_max_requests_per_hour_per_user
+    integer("CHAT_MAX_REQUESTS_PER_HOUR_PER_USER", default: 10, min: 1)
+  end
+
   def auth0_configured?
     !auth0_domain.strip.empty? &&
       !auth0_client_id.strip.empty? &&

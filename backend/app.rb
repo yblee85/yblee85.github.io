@@ -11,6 +11,8 @@ require_relative "lib/embeddings/voyage_client"
 require_relative "lib/vector/in_memory_index"
 require_relative "lib/llm/anthropic_client"
 require_relative "lib/rag/qa_service"
+require_relative "lib/cache/local_store"
+require_relative "lib/auth/rate_limiter"
 require_relative "lib/auth/web_routes"
 
 begin
@@ -97,6 +99,7 @@ class PortfolioApi < Sinatra::Base
     embedder: EMBEDDER_FOR_QA,
     llm_client: Llm::AnthropicClient.new
   )
+  RATE_LIMITER = Auth::RateLimiter.new
 
   get "/" do
     {
@@ -116,6 +119,10 @@ class PortfolioApi < Sinatra::Base
 
   post "/api/chat" do
     halt 401, { error: "authentication required" }.to_json if session[:user].nil?
+    user_email = session[:user]["email"].to_s.strip
+    unless RATE_LIMITER.record_visit(user_email)
+      halt 429, { error: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user" }.to_json
+    end
 
     payload = JSON.parse(request.body.read)
     message = payload["message"].to_s.strip
