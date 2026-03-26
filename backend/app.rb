@@ -2,6 +2,7 @@ require "json"
 require "sinatra/base"
 require "omniauth"
 require "omniauth-auth0"
+require "rack/session/pool"
 
 require_relative "lib/config"
 require_relative "lib/data/document_loader"
@@ -20,8 +21,13 @@ rescue Config::ValidationError => e
 end
 
 class PortfolioApi < Sinatra::Base
-  # Register OmniAuth before enable :sessions so Rack prepends Session on top of OmniAuth
-  # (Session -> OmniAuth -> Sinatra); OmniAuth needs the session for OAuth state.
+  use Rack::Session::Pool,
+      key: "rack.session",
+      path: "/",
+      httponly: true,
+      secure: Config.rack_env == "production",
+      same_site: Config.rack_env == "production" ? :none : :lax
+
   if Config.auth0_configured?
     use OmniAuth::Builder do
       provider :auth0,
@@ -39,13 +45,6 @@ class PortfolioApi < Sinatra::Base
 
   configure do
     OmniAuth.config.allowed_request_methods = %i[get post]
-
-    enable :sessions
-    set :sessions,
-        secret: Config.session_secret,
-        httponly: true,
-        secure: Config.rack_env == "production",
-        same_site: Config.rack_env == "production" ? :none : :lax
 
     permitted_hosts = [
       *Config.app_permitted_hosts

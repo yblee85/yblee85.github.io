@@ -34,9 +34,13 @@ module Auth
         auth = request.env["omniauth.auth"]
         halt 401, { error: "authentication failed" }.to_json unless auth
 
-        session[:user] = user_payload_from_omniauth(auth)
-
         return_to = session.delete(:oauth_return_to) || Config.frontend_origin.split(",").first.strip
+        user = user_payload_from_omniauth(auth)
+
+        # Cookie sessions are size-limited; keep only what we need.
+        session.clear
+        session[:user] = user
+
         redirect return_to
       end
     end

@@ -137,6 +137,13 @@ describe("ProtectedAuthContent", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
+        json: async () => ({
+          authenticated: true,
+          user: { name: "Test User", email: "test@example.com" },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
         json: async () => ({ answer: "Hello from backend" }),
       });
 
