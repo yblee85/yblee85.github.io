@@ -89,7 +89,7 @@ module Config
   end
 
   def chat_max_requests_per_hour_per_user
-    integer("CHAT_MAX_REQUESTS_PER_HOUR_PER_USER", default: 10, min: 1)
+    integer("CHAT_MAX_REQUESTS_PER_HOUR_PER_USER", default: 50, min: 1)
   end
 
   def auth0_configured?
