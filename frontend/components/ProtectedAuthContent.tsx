@@ -105,10 +105,11 @@ export default function ProtectedAuthContent() {
             Hi there, you&apos;re about to chat with my agent about my career history.
           </p>
           <p className="mt-3">I do not (nor will I) collect your personal information anywhere.</p>
-          <p className="mt-3">I made this page sign-in protected for 2 reasons:</p>
+          <p className="mt-3">It&apos;s anonymous and I do not know who you are.</p>
+          <p className="mt-3">I made this sign-in page for following reasons:</p>
           <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li>I want some sort of verification to prevent abuse.</li>
-            <li>I&apos;m super cheap, I don&apos;t want to be surprised by AI service fees.</li>
+            <li>To set rate limits to protect against service abuse and billing surprises.</li>
+            <li>For fun/study of OAuth 2.0.</li>
           </ol>
         </div>
 

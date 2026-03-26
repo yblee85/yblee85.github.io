@@ -120,7 +120,11 @@ class PortfolioApi < Sinatra::Base
       halt 401,
            Web::Response.error(code: "unauthorized", message: "authentication required").to_json
     end
-    user_email = session[:user]["email"].to_s.strip
+    user_email = session[:user]["email"].to_s.strip.downcase
+    if user_email.empty?
+      halt 400, Web::Response.error(code: "bad_request", message: "authenticated user identity is required").to_json
+    end
+    
     unless RATE_LIMITER.record_visit(user_email)
       halt 429, Web::Response.error(
         code: "rate_limited",
