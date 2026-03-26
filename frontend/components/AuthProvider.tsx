@@ -58,14 +58,19 @@ export default function AuthProvider({ children }: PropsWithChildren) {
 
     try {
       const res = await fetch(`${base}/auth/me`, { credentials: "include" });
-      const data = (await res.json()) as {
+      const body = (await res.json()) as {
         authenticated?: boolean;
         user?: SessionUser;
+        data?: {
+          authenticated?: boolean;
+          user?: SessionUser;
+        };
       };
+      const normalized = body.data ?? body;
 
-      if (res.ok && data.authenticated && data.user) {
+      if (res.ok && normalized.authenticated && normalized.user) {
         setAuthenticated(true);
-        setUser(data.user);
+        setUser(normalized.user);
         setNavSessionFlag(true);
       } else {
         setAuthenticated(false);
