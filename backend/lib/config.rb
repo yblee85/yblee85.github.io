@@ -92,6 +92,19 @@ module Config
     integer("CHAT_MAX_REQUESTS_PER_HOUR_PER_USER", default: 50, min: 1)
   end
 
+  def slack_webhook_url
+    ENV["SLACK_WEBHOOK_URL"].to_s.strip
+  end
+
+  def slack_channel
+    ENV["SLACK_CHANNEL"].to_s.strip
+  end
+
+  def slack_configured?
+    !slack_webhook_url.strip.empty? &&
+      !slack_channel.strip.empty?
+  end
+
   def auth0_configured?
     !auth0_domain.strip.empty? &&
       !auth0_client_id.strip.empty? &&
