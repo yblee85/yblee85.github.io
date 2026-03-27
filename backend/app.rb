@@ -103,8 +103,11 @@ class PortfolioApi < Sinatra::Base
     llm_client: Llm::AnthropicClient.new
   )
   RATE_LIMITER = Auth::RateLimiter.new
-  VISITOR_LOGGER = Visitors::VisitorLogger.new
-  VISITOR_LOGGER.subscribe(Events::EventBus.instance)
+
+  if Config.slack_configured?
+    VISITOR_LOGGER = Visitors::VisitorLogger.new
+    VISITOR_LOGGER.subscribe(Events::EventBus.instance)
+  end
 
   get "/" do
     Web::Response.success.to_json

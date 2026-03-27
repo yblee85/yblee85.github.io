@@ -100,6 +100,11 @@ module Config
     ENV["SLACK_CHANNEL"].to_s.strip
   end
 
+  def slack_configured?
+    !slack_webhook_url.strip.empty? &&
+      !slack_channel.strip.empty?
+  end
+
   def auth0_configured?
     !auth0_domain.strip.empty? &&
       !auth0_client_id.strip.empty? &&
