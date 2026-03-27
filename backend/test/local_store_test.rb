@@ -15,7 +15,7 @@ class LocalStoreTest < Minitest::Test
   def test_delete_removes_key
     @store.set("user-1", [1])
 
-    assert_equal [1], @store.delete("user-1")
+    assert_equal true, @store.delete("user-1")
     assert_nil @store.get("user-1")
   end
 

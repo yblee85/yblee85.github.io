@@ -43,6 +43,8 @@ module Auth
 
         session[:user] = user
 
+        Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"] })
+
         redirect return_to
       end
     end
@@ -55,7 +57,7 @@ module Auth
     end
 
     def self.register_logout(app)
-      app.get "/auth/logout" do
+      app.get %r{/auth/logout/?} do
         return_to = safe_return_to(params["return_to"])
         session.clear
         redirect return_to unless oauth_ready?

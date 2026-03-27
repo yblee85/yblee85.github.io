@@ -12,9 +12,11 @@ require_relative "lib/vector/in_memory_index"
 require_relative "lib/llm/anthropic_client"
 require_relative "lib/rag/qa_service"
 require_relative "lib/cache/local_store"
+require_relative "lib/events/event_bus"
 require_relative "lib/web/response"
 require_relative "lib/auth/rate_limiter"
 require_relative "lib/auth/web_routes"
+require_relative "lib/visitors/visitor_logger"
 
 begin
   Config.validate_runtime!
@@ -101,6 +103,8 @@ class PortfolioApi < Sinatra::Base
     llm_client: Llm::AnthropicClient.new
   )
   RATE_LIMITER = Auth::RateLimiter.new
+  VISITOR_LOGGER = Visitors::VisitorLogger.new
+  VISITOR_LOGGER.subscribe(Events::EventBus.instance)
 
   get "/" do
     Web::Response.success.to_json
@@ -120,12 +124,13 @@ class PortfolioApi < Sinatra::Base
       halt 401,
            Web::Response.error(code: "unauthorized", message: "authentication required").to_json
     end
-    user_email = session[:user]["email"].to_s.strip.downcase
-    if user_email.empty?
+
+    user_id = session[:user]["user_id"].to_s
+    if user_id.empty?
       halt 400, Web::Response.error(code: "bad_request", message: "authenticated user identity is required").to_json
     end
 
-    unless RATE_LIMITER.record_visit(user_email)
+    unless RATE_LIMITER.record_visit(user_id)
       halt 429, Web::Response.error(
         code: "rate_limited",
         message: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user"
