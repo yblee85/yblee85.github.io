@@ -47,7 +47,7 @@ module PortfolioData
     end
 
     def item_source_text(item)
-      Array(item.fetch("contents")).map(&:to_s).join("\n")
+      Array(item.fetch("contents")).join("\n")
     end
 
     def chunked_item_docs(item:, collection:, source_path:, chunk_size_chars:, chunk_overlap_percent:)

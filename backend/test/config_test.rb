@@ -11,7 +11,8 @@ class ConfigTest < Minitest::Test
       "VOYAGE_MODEL" => nil,
       "RAG_CHUNK_SIZE_CHARS" => nil,
       "RAG_CHUNK_OVERLAP_PERCENT" => nil,
-      "ANTHROPIC_MODEL" => nil
+      "ANTHROPIC_MODEL" => nil,
+      "MAX_CHAT_HISTORY" => nil
     ) do
       assert_equal 3000, Config.app_port
       assert_equal "./external/data", Config.aboutme_data_dir_path
@@ -21,6 +22,7 @@ class ConfigTest < Minitest::Test
       assert_equal 2000, Config.rag_chunk_size_chars
       assert_equal 10.0, Config.rag_chunk_overlap_percent
       assert_equal "claude-haiku-4-5", Config.anthropic_model
+      assert_equal 5, Config.max_chat_history
     end
   end
 

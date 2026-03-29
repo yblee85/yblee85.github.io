@@ -166,5 +166,12 @@ describe("ProtectedAuthContent", () => {
       expect(screen.getByText("What did you work on?")).toBeInTheDocument();
       expect(screen.getByText("Hello from backend")).toBeInTheDocument();
     });
+
+    const chatCall = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c) => typeof c[0] === "string" && (c[0] as string).includes("/api/chat"),
+    );
+    expect(chatCall).toBeDefined();
+    const body = JSON.parse((chatCall![1] as { body: string }).body);
+    expect(body).toEqual({ message: "What did you work on?" });
   });
 });

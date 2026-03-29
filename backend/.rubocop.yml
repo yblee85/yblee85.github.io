@@ -51,8 +51,7 @@ Metrics/PerceivedComplexity:
   Max: 12
 
 Metrics/BlockLength:
-  Exclude:
-    - "test/**/*"
+  Enabled: false
 
 Metrics/ParameterLists:
   Max: 6
