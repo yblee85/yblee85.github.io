@@ -3,7 +3,9 @@
     "documents": [
       {
         "id": "work-experience",
-        "content": "Yunbo implemented a cool feature at Example Inc.",
+        "contents": [
+          "Yunbo implemented a cool feature at Example Inc."
+        ],
         "metadata": {
           "category": "work_experience",
           "organization": "Example Inc.",

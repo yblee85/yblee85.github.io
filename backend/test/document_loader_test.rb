@@ -25,7 +25,7 @@ class DocumentLoaderTest < Minitest::Test
             documents: [
               {
                 id: "doc-1",
-                content: "1234567890",
+                contents: ["1234567890"],
                 metadata: { "organization" => "Mappedin", "category" => "work" }
               }
             ]
@@ -47,6 +47,36 @@ class DocumentLoaderTest < Minitest::Test
       assert_equal "doc-1", docs.first[:metadata]["_base_id"]
       assert_equal 1, docs.first[:metadata]["_chunk_index"]
       assert_equal 5, docs.first[:metadata]["_chunk_total"]
+    end
+  end
+
+  def test_load_all_joins_multiple_contents_with_newlines
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "multi.json")
+      File.write(
+        path,
+        JSON.generate(
+          {
+            collection_name: "portfolio",
+            documents: [
+              {
+                id: "doc-2",
+                contents: %w[alpha beta],
+                metadata: { "category" => "work" }
+              }
+            ]
+          }
+        )
+      )
+
+      docs = PortfolioData::DocumentLoader.load_all(
+        data_dir: dir,
+        chunk_size_chars: 100,
+        chunk_overlap_percent: 0
+      )
+
+      assert_equal 1, docs.length
+      assert_equal "alpha\nbeta", docs.first[:content]
     end
   end
 end
