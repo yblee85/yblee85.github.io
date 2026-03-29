@@ -22,7 +22,7 @@ class ConfigTest < Minitest::Test
       assert_equal 2000, Config.rag_chunk_size_chars
       assert_equal 10.0, Config.rag_chunk_overlap_percent
       assert_equal "claude-haiku-4-5", Config.anthropic_model
-      assert_equal 5, Config.max_chat_history
+      assert_equal 6, Config.max_chat_history
     end
   end
 
