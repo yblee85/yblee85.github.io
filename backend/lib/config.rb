@@ -92,6 +92,12 @@ module Config
     integer("CHAT_MAX_REQUESTS_PER_HOUR_PER_USER", default: 50, min: 1)
   end
 
+  # Prior user/assistant messages (each counts as one) appended before the current turn in the LLM call.
+  # Set to 0 to disable sending history.
+  def max_chat_history
+    integer("MAX_CHAT_HISTORY", default: 6, min: 0)
+  end
+
   def slack_webhook_url
     ENV["SLACK_WEBHOOK_URL"].to_s.strip
   end

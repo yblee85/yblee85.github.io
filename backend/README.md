@@ -17,7 +17,7 @@ Backend Ruby app that answers portfolio questions using retrieval + optional Cla
 At startup:
 
 1. Load all JSON files from `ABOUTME_DATA_DIR_PATH`
-2. Split each `content` into character chunks (configurable)
+2. Join each document's `contents` strings, then split into character chunks (configurable)
 3. Build vectors in memory using configured embedding provider
 4. On request, retrieve top-k docs by cosine similarity
 5. Optionally send contexts + question to Claude for final response

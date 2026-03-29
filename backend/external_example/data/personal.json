@@ -3,7 +3,9 @@
     "documents": [
       {
         "id": "personal-experience",
-        "content": "Yunbo did an awesome thing at example event",
+        "contents": [
+          "Yunbo did an awesome thing at example event"
+        ],
         "metadata": {
           "category": "personal_experience",
           "period": {

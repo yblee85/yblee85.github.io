@@ -1,3 +1,5 @@
+require_relative "../config"
+
 module Rag
   class QaService
     def initialize(index:, embedder:, llm_client: nil)
@@ -6,14 +8,15 @@ module Rag
       @llm_client = llm_client
     end
 
-    def answer(question:, k: 8, min_score: 0.2)
+    def answer(question:, history: nil, k: 20, min_score: 0.2)
       hits = @index.search(query: question, embedder: @embedder, k: k, min_score: min_score)
       contexts = hits.map { |h| format_hit_context(h) }
+      capped_history = normalize_history(history)
 
       answer_text =
         if @llm_client&.configured? && !contexts.empty?
           begin
-            @llm_client.summarize(question: question, contexts: contexts)
+            @llm_client.summarize(question: question, contexts: contexts, history: capped_history)
           rescue StandardError => e
             # Graceful degradation: retrieval still works even if LLM vendor config fails.
             "LLM summarization unavailable (#{e.class}: #{e.message}).\n" \
@@ -33,6 +36,20 @@ module Rag
     end
 
     private
+
+    def normalize_history(raw)
+      return [] if Config.max_chat_history <= 0
+
+      arr = Array(raw).filter_map do |h|
+        role = (h["role"] || h[:role]).to_s
+        content = (h["content"] || h[:content]).to_s.strip
+        next if content.empty?
+        next unless %w[user assistant].include?(role)
+
+        { role: role, content: content }
+      end
+      arr.last(Config.max_chat_history)
+    end
 
     def format_hit_context(hit)
       metadata = hit[:metadata] || {}

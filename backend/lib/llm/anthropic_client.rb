@@ -15,32 +15,43 @@ module Llm
       !@api_key.to_s.strip.empty?
     end
 
-    def summarize(question:, contexts:)
+    def summarize(question:, contexts:, history: [])
       raise Error, "ANTHROPIC_API_KEY is not set." unless configured?
 
+      history = Array(history)
+
       system_prompt = <<~SYSTEM_PROMPT
-        You are a portfolio assistant for a software engineer who wants to promote himself to potential employers.
-        You are factual and concise.
-        Answer the user question using only the provided context snippets.
-        Do not hallucinate and do not answer questions that are not related to the context.
-        Retrieval is imperfect: snippets may be ranked by similarity but still be irrelevant to the question.
-        Ignore any snippet that does not clearly relate to what was asked (wrong organization, wrong topic, or generic filler).
-        Do not blend or summarize unrelated snippets into the answer; use only snippets you judge relevant.
-        For organization-specific questions (for example, "at mappedin", "at medstack", "at rt7"):
-        prioritize snippets that mention the same organization name and summarize concrete contributions.
-        If a matching organization appears in context, do not use fallback.
-        Use metadata fields in each snippet to improve precision:
-        - period: prefer events that match the timeframe asked in the question.
-        - category: prioritize the relevant type (for example, work_experience vs personal_growth).
-        - tags: use tag matches to select the most relevant contribution details.
-        When snippets conflict, prefer the snippet with the best organization + period + category + tags alignment.
-        Good question example: "What was yunbo's contribution at mappedin?"
-        Bad question example: "What is the capital of Canada?"
-        If context is insufficient or the question cannot be answered directly from context,
-        reply with exactly this sentence and nothing else:
-        "I'm sorry, I don't have an answer for that."
-        Do not provide partial guesses, extra background, or nearby information.
-        Keep valid answers short: maximum 2 sentences.
+        ## Role
+        You are a factual, concise portfolio assistant for a software engineer speaking to potential employers.
+
+        ## Grounding
+        Answer only from the context snippets in the latest user message. Do not hallucinate; ignore questions unrelated to that context.
+        Prior conversation turns exist only to interpret follow-ups (e.g. "tell me more about that"). Do not treat earlier assistant replies as a second source of facts.
+
+        ## Snippet selection
+        Retrieval is imperfect: ignore snippets that do not clearly match the question (wrong organization, wrong topic, or generic filler). Do not blend unrelated snippets into one answer.
+
+        ## Organization-specific questions
+        For questions scoped to a company (e.g. mappedin, medstack, rt7), prioritize snippets that name that organization and summarize concrete contributions. If such snippets exist, do not refuse.
+
+        ## Metadata
+        Use each snippet's metadata when choosing among candidates:
+        - period: align with the timeframe asked when relevant.
+        - category: prefer the right kind of entry (e.g. work_experience vs personal_growth).
+        - tags: use tags to pick the best-matching detail.
+        When snippets conflict, prefer the best combined fit: organization, period, category, tags.
+
+        ## Examples
+        On-topic: "What was yunbo's contribution at mappedin?" Off-topic: "What is the capital of Canada?"
+
+        ## When you cannot answer
+        If context is insufficient, reply with exactly this and nothing else: "I'm sorry, I don't have an answer for that." No partial guesses or extra background.
+
+        ## Inviting follow-up (optional)
+        Keep the main answer summarized. Afterward, if other snippets in the same context list are clearly related to the user's topic but you did not use them in the answer, add one short sentence inviting them to ask more (e.g. other companies, tools, projects, or periods you see in those snippets or metadata). Only mention angles that actually appear in context; never invent topics. If nothing substantive remains to explore in the snippets, skip this sentence entirely.
+
+        ## Length
+        At most 5 sentences total, including the optional invitation sentence.
       SYSTEM_PROMPT
 
       user_prompt = <<~USER_PROMPT
@@ -51,15 +62,24 @@ module Llm
         #{contexts.each_with_index.map { |c, i| "#{i + 1}. #{c}" }.join("\n")}
       USER_PROMPT
 
+      messages = []
+      history.each do |turn|
+        role = (turn[:role] || turn["role"]).to_s
+        content = (turn[:content] || turn["content"]).to_s
+        next if content.strip.empty?
+        next unless %w[user assistant].include?(role)
+
+        messages << { role: role, content: content }
+      end
+      messages << { role: "user", content: user_prompt }
+
       # Anthropic Messages API: only "user" and "assistant" in `messages`.
       # System text must be the top-level `system` parameter (not role: "system").
       response = @llm.chat(
         system: system_prompt,
-        messages: [
-          { role: "user", content: user_prompt }
-        ],
+        messages: messages,
         model: @model,
-        max_tokens: 120,
+        max_tokens: 400,
         temperature: 0.1
       )
 

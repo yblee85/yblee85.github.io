@@ -23,10 +23,10 @@ class QaServiceTest < Minitest::Test
       @configured
     end
 
-    def summarize(question:, contexts:)
+    def summarize(question:, contexts:, history: [])
       raise @error if @error
 
-      "summary: #{question} (#{contexts.size})"
+      "summary: #{question} (#{contexts.size}) hist=#{history.size}"
     end
   end
 
@@ -85,5 +85,26 @@ class QaServiceTest < Minitest::Test
     assert_match "period: 2025-01 to 2026-01", result[:answer]
     assert_match "tags: snowflake, etl", result[:answer]
     assert_match "worked on Y", result[:answer]
+  end
+
+  def test_passes_capped_history_to_llm
+    with_env("MAX_CHAT_HISTORY" => "2") do
+      hits = [{ id: "a", score: 0.9, metadata: {}, content: "ctx" }]
+      service = Rag::QaService.new(
+        index: FakeIndex.new(hits),
+        embedder: Object.new,
+        llm_client: FakeLlm.new(configured: true)
+      )
+
+      hist = [
+        { "role" => "user", "content" => "first" },
+        { "role" => "assistant", "content" => "second" },
+        { "role" => "user", "content" => "third" },
+        { "role" => "assistant", "content" => "fourth" }
+      ]
+      result = service.answer(question: "follow up", history: hist)
+
+      assert_match "hist=2", result[:answer]
+    end
   end
 end

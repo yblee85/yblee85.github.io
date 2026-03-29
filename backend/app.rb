@@ -17,6 +17,7 @@ require_relative "lib/web/response"
 require_relative "lib/auth/rate_limiter"
 require_relative "lib/auth/web_routes"
 require_relative "lib/visitors/visitor_logger"
+require_relative "lib/chat/chatroom"
 
 begin
   Config.validate_runtime!
@@ -103,6 +104,7 @@ class PortfolioApi < Sinatra::Base
     llm_client: Llm::AnthropicClient.new
   )
   RATE_LIMITER = Auth::RateLimiter.new
+  CHATROOM = Chat::Chatroom.new
 
   if Config.slack_configured?
     VISITOR_LOGGER = Visitors::VisitorLogger.new
@@ -144,7 +146,10 @@ class PortfolioApi < Sinatra::Base
     message = payload["message"].to_s.strip
     halt 400, Web::Response.error(code: "bad_request", message: "message is required").to_json if message.empty?
 
-    Web::Response.success(data: QA.answer(question: message)).to_json
+    history = CHATROOM.get_messages(user_id)
+    response = QA.answer(question: message, history: history)
+    CHATROOM.add_question_and_answer(user_id: user_id, question: message, answer: response[:answer])
+    Web::Response.success(data: response).to_json
   rescue Embeddings::VoyageClient::RateLimitError => e
     halt 429, Web::Response.error(
       code: "voyage_rate_limited",

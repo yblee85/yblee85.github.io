@@ -5,7 +5,7 @@ module PortfolioData
     module_function
 
     # Loads every *.json file under data_dir and returns normalized docs:
-    # [{ id:, content:, metadata: }, ...]
+    # [{ id:, content:, metadata: }, ...] (JSON uses `contents` array per document, joined then chunked)
     def load_all(data_dir:, chunk_size_chars: 2000, chunk_overlap_percent: 10)
       docs = []
       Dir.glob(File.join(data_dir, "**", "*.json")).each do |path|
@@ -46,6 +46,10 @@ module PortfolioData
       chunks
     end
 
+    def item_source_text(item)
+      Array(item.fetch("contents")).join("\n")
+    end
+
     def chunked_item_docs(item:, collection:, source_path:, chunk_size_chars:, chunk_overlap_percent:)
       base_id = item.fetch("id")
       base_metadata = item.fetch("metadata").merge(
@@ -53,7 +57,7 @@ module PortfolioData
         "_source_file" => source_path
       )
       chunks = chunk_text(
-        text: item.fetch("content"),
+        text: item_source_text(item),
         chunk_size_chars: chunk_size_chars,
         chunk_overlap_percent: chunk_overlap_percent
       )
