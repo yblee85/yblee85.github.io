@@ -7,6 +7,7 @@ vi.mock("next/font/google", () => {
   const loader = () => ({ className: "mock-next-font" });
   return {
     Schoolbell: loader,
+    Open_Sans: loader,
   };
 });
 

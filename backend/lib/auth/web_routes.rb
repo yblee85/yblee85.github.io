@@ -2,6 +2,7 @@ require "cgi"
 require_relative "../config"
 require_relative "../web/response"
 require_relative "web_helpers"
+require_relative "user_type"
 
 module Auth
   module WebRoutes
@@ -16,18 +17,9 @@ module Auth
 
     def self.register_login(app)
       app.get "/auth/login" do
-        halt_oauth_not_configured unless oauth_ready?
+        return handle_guest_login if guest_login_requested?
 
-        connection = params["connection"].to_s.strip
-        if connection.empty?
-          halt 400, Web::Response.error(
-            code: "bad_request",
-            message: "connection is required (e.g. google-oauth2, github, linkedin)"
-          ).to_json
-        end
-
-        session[:oauth_return_to] = safe_return_to(params["return_to"])
-        redirect "/auth/auth0?connection=#{CGI.escape(connection)}"
+        handle_oauth_login
       end
     end
 
@@ -59,10 +51,15 @@ module Auth
     def self.register_logout(app)
       app.get %r{/auth/logout/?} do
         return_to = safe_return_to(params["return_to"])
-        session.clear
-        redirect return_to unless oauth_ready?
+        user_type = session_user_type
 
-        redirect auth0_logout_url(return_to)
+        session.clear
+        if user_type == UserType::OAUTH_USER
+          redirect return_to unless oauth_ready?
+          redirect auth0_logout_url(return_to)
+        else
+          redirect return_to
+        end
       end
     end
 

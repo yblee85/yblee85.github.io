@@ -138,7 +138,7 @@ class PortfolioApi < Sinatra::Base
     unless RATE_LIMITER.record_visit(user_id)
       halt 429, Web::Response.error(
         code: "rate_limited",
-        message: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user"
+        message: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user/ip"
       ).to_json
     end
 
