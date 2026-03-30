@@ -34,6 +34,7 @@ describe("ProtectedAuthContent", () => {
     expect(screen.getByRole("button", { name: /sign in with google/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sign in with github/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /sign in with linkedin/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue as guest/i })).toBeInTheDocument();
   });
 
   it("navigates to API login with google-oauth2 when Google is clicked", async () => {

@@ -2,10 +2,10 @@
 
 import { useAuth } from "@/components/AuthProvider";
 import { getApiBaseUrl } from "@/lib/api";
-import { Schoolbell } from "next/font/google";
+import { Open_Sans } from "next/font/google";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 
-const schoolbell = Schoolbell({ weight: "400", subsets: ["latin"] });
+const openSans = Open_Sans({ subsets: ["latin"] });
 
 function GoogleIcon({ className }: { className?: string }) {
   return (
@@ -63,6 +63,15 @@ function logoutUrl(): string | null {
   return u.toString();
 }
 
+function guestLoginUrl(): string | null {
+  const base = getApiBaseUrl();
+  if (!base || typeof window === "undefined") return null;
+  const u = new URL(`${base}/auth/login`);
+  u.searchParams.set("guest", "true");
+  u.searchParams.set("return_to", window.location.href);
+  return u.toString();
+}
+
 export default function ProtectedAuthContent() {
   const { loading, authenticated, user, refresh } = useAuth();
   const base = getApiBaseUrl();
@@ -96,21 +105,14 @@ export default function ProtectedAuthContent() {
         <header className="text-left">
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">Chat with my agent</h1>
           <p className="mt-2 text-sm text-gray-500">
-            Sign in with Google, GitHub, or LinkedIn to continue.
+            Ask me anything about my career history.
           </p>
         </header>
 
-        <div className={`text-left text-[18px] leading-8 text-gray-600 ${schoolbell.className}`}>
-          <p className="font-medium text-gray-800">
+        <div className={`text-left text-[18px] leading-8 text-gray-700 ${openSans.className}`}>
+          <p className="font-medium text-gray-900">
             Hi there, you&apos;re about to chat with my agent about my career history.
           </p>
-          <p className="mt-3">I do not (nor will I) collect your personal information anywhere.</p>
-          <p className="mt-3">It&apos;s anonymous and I do not know who you are.</p>
-          <p className="mt-3">I made this sign-in page for following reasons:</p>
-          <ol className="mt-3 list-decimal space-y-2 pl-5">
-            <li>To set rate limits to protect against service abuse and billing surprises.</li>
-            <li>For fun/study of OAuth 2.0.</li>
-          </ol>
         </div>
 
         <div className="w-full rounded-xl border border-gray-200 bg-gray-50/80 p-6 shadow-sm">
@@ -154,7 +156,37 @@ export default function ProtectedAuthContent() {
               <LinkedInIcon className="h-5 w-5 shrink-0 text-white" />
               Sign in with LinkedIn
             </button>
+
+            <div className="flex items-center gap-3 py-1">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-[11px] font-medium uppercase tracking-wider text-gray-400">Or</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                const url = guestLoginUrl();
+                if (url) window.location.assign(url);
+              }}
+              className="inline-flex w-full cursor-pointer items-center justify-center rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-50 hover:shadow"
+              aria-label="Continue as guest"
+            >
+              Continue as guest
+            </button>
           </div>
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white/70 px-4 py-3 text-sm leading-6 text-gray-600">
+          <p className="font-medium text-gray-900">Your privacy comes first and is respected.</p>
+          <p className="mt-1">
+            I do not (nor will I) collect your personal information. It&apos;s anonymous and I do not know who you are.
+          </p>
+          <p className="mt-2">I made this sign-in page for the following reasons:</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>To set rate limits to protect against service abuse and billing surprises.</li>
+            <li>For fun/study of OAuth 2.0.</li>
+          </ol>
         </div>
       </div>
     );
