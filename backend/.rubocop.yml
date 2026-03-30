@@ -41,6 +41,8 @@ Metrics/ClassLength:
 Metrics/AbcSize:
   Enabled: true
   Max: 35
+  Exclude:
+    - "test/**/*"
 
 Metrics/CyclomaticComplexity:
   Enabled: true
