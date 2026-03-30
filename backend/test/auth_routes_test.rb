@@ -3,6 +3,7 @@ require "sinatra/base"
 require "rack/test"
 
 require_relative "test_helper"
+require_relative "../lib/events/event_bus"
 require_relative "../lib/auth/web_routes"
 
 class AuthRoutesTest < Minitest::Test
@@ -29,20 +30,27 @@ class AuthRoutesTest < Minitest::Test
 
   def test_guest_login_sets_session_user_and_redirects
     with_env(oauth_env) do
-      get "/auth/login?guest=true&return_to=http://localhost:3000/chat", {}, {
-        "REMOTE_ADDR" => "1.2.3.4",
-        "HTTP_HOST" => "localhost"
-      }
-      assert_equal 302, last_response.status
-      assert_equal "http://localhost:3000/chat", last_response.headers["Location"]
+      published = []
+      Events::EventBus.instance.stub(:publish, ->(name, payload) { published << [name, payload] }) do
+        get "/auth/login?guest=true&return_to=http://localhost:3000/chat", {}, {
+          "REMOTE_ADDR" => "1.2.3.4",
+          "HTTP_HOST" => "localhost"
+        }
+        assert_equal 302, last_response.status
+        assert_equal "http://localhost:3000/chat", last_response.headers["Location"]
 
-      sess = last_request.env["rack.session"]
-      refute_nil sess
-      user = sess[:user] || sess["user"]
-      refute_nil user
-      assert_equal "Guest", user["name"] || user[:name]
-      assert_equal "guest", user["type"] || user[:type]
-      refute_nil user["user_id"] || user[:user_id]
+        assert_equal 1, published.length
+        assert_equal "auth.login", published.first[0]
+        refute_nil(published.first[1][:user_id])
+
+        sess = last_request.env["rack.session"]
+        refute_nil sess
+        user = sess[:user] || sess["user"]
+        refute_nil user
+        assert_equal "Guest", user["name"] || user[:name]
+        assert_equal "guest", user["type"] || user[:type]
+        refute_nil user["user_id"] || user[:user_id]
+      end
     end
   end
 
@@ -86,6 +94,37 @@ class AuthRoutesTest < Minitest::Test
       assert_match(%r{\Ahttps://example\.auth0\.com/v2/logout\?}, location)
       assert_includes location, "returnTo=http%3A%2F%2Flocalhost%3A3000%2Fchat"
       assert_includes location, "client_id=cid"
+    end
+  end
+
+  def test_oauth_callback_publishes_auth_login_event
+    with_env(oauth_env) do
+      published = []
+      Events::EventBus.instance.stub(:publish, ->(name, payload) { published << [name, payload] }) do
+        auth = {
+          "uid" => "auth0|abc123",
+          "info" => {
+            "email" => "test@example.com",
+            "name" => "Test User",
+            "image" => "https://example.com/pic.png"
+          }
+        }
+
+        get "/auth/auth0/callback",
+            {},
+            {
+              "HTTP_HOST" => "localhost",
+              "rack.session" => { oauth_return_to: "http://localhost:3000/chat" },
+              "omniauth.auth" => auth
+            }
+
+        assert_equal 302, last_response.status
+        assert_equal "http://localhost:3000/chat", last_response.headers["Location"]
+
+        assert_equal 1, published.length
+        assert_equal "auth.login", published.first[0]
+        refute_nil(published.first[1][:user_id])
+      end
     end
   end
 end

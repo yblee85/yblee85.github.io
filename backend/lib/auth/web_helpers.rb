@@ -17,8 +17,11 @@ module Auth
 
       ip = request.ip.to_s.strip
       halt 400, Web::Response.error(code: "bad_request", message: "could not determine client ip").to_json if ip.empty?
+      user = guest_user_payload(ip)
+      session[:user] = user
 
-      session[:user] = guest_user_payload(ip)
+      Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"] })
+
       redirect safe_return_to(params["return_to"])
     end
 
