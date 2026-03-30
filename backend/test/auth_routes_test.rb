@@ -36,7 +36,6 @@ class AuthRoutesTest < Minitest::Test
       assert_equal 302, last_response.status
       assert_equal "http://localhost:3000/chat", last_response.headers["Location"]
 
-      # Assert session was set during guest login (avoid a second request that can be blocked by rack-protection defaults).
       sess = last_request.env["rack.session"]
       refute_nil sess
       user = sess[:user] || sess["user"]
@@ -90,4 +89,3 @@ class AuthRoutesTest < Minitest::Test
     end
   end
 end
-
