@@ -1,4 +1,4 @@
-require_relative "lib/config"
+require_relative "src/lib/config"
 require "rack/cors"
 
 use Rack::Cors do
@@ -9,6 +9,6 @@ use Rack::Cors do
   end
 end
 
-require_relative "app"
+require_relative "src/app"
 
 run PortfolioApi
