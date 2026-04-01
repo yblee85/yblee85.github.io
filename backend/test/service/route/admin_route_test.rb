@@ -6,6 +6,7 @@ require_relative "../../test_helper"
 require_relative "../../../src/middleware/api_auth"
 require_relative "../../../src/service/route/admin_route"
 require_relative "../../../src/service/auth/user_role"
+require_relative "../../../src/service/cli/commands/sync_portfolio_data"
 
 class AdminRouteTest < Minitest::Test
   include Rack::Test::Methods
@@ -13,12 +14,14 @@ class AdminRouteTest < Minitest::Test
   class SpyQa
     attr_reader :reindex_db_calls
 
-    def initialize
+    def initialize(timeline: nil)
       @reindex_db_calls = 0
+      @timeline = timeline
     end
 
     def reindex_db
       @reindex_db_calls += 1
+      @timeline << :reindex if @timeline
     end
   end
 
@@ -34,7 +37,8 @@ class AdminRouteTest < Minitest::Test
   end
 
   def setup
-    @spy = SpyQa.new
+    @timeline = []
+    @spy = SpyQa.new(timeline: @timeline)
     TestAdminApp.set :container, TestAdminApp::Container.new(qa: @spy)
   end
 
@@ -43,7 +47,9 @@ class AdminRouteTest < Minitest::Test
   end
 
   def test_reindex_db_requires_authentication
-    post "/api/admin/reindex_db", {}, { "HTTP_HOST" => "localhost" }
+    Cli::Commands::SyncPortfolioData.stub(:new, -> { raise "sync should not run" }) do
+      post "/api/admin/reindex_db", {}, { "HTTP_HOST" => "localhost" }
+    end
 
     assert_equal 401, last_response.status
     body = JSON.parse(last_response.body)
@@ -53,17 +59,19 @@ class AdminRouteTest < Minitest::Test
   end
 
   def test_reindex_db_requires_admin_role
-    post "/api/admin/reindex_db",
-         {},
-         {
-           "HTTP_HOST" => "localhost",
-           "rack.session" => {
-             user: {
-               "user_id" => "user-1",
-               "roles" => [Auth::UserRole::USER]
+    Cli::Commands::SyncPortfolioData.stub(:new, -> { raise "sync should not run" }) do
+      post "/api/admin/reindex_db",
+           {},
+           {
+             "HTTP_HOST" => "localhost",
+             "rack.session" => {
+               user: {
+                 "user_id" => "user-1",
+                 "roles" => [Auth::UserRole::USER]
+               }
              }
            }
-         }
+    end
 
     assert_equal 401, last_response.status
     body = JSON.parse(last_response.body)
@@ -73,21 +81,60 @@ class AdminRouteTest < Minitest::Test
   end
 
   def test_reindex_db_succeeds_for_admin
-    post "/api/admin/reindex_db",
-         {},
-         {
-           "HTTP_HOST" => "localhost",
-           "rack.session" => {
-             user: {
-               "user_id" => "admin-1",
-               "roles" => [Auth::UserRole::ADMIN]
+    sync_result = Cli::Service::Result.new(ok: true, exit_code: 0, stdout: "", stderr: "")
+    fake_sync_cmd = Object.new
+    fake_sync_cmd.define_singleton_method(:call) do
+      timeline = Thread.current[:_admin_route_test_timeline] || []
+      timeline << :sync
+      sync_result
+    end
+
+    Thread.current[:_admin_route_test_timeline] = @timeline
+    Cli::Commands::SyncPortfolioData.stub(:new, -> { fake_sync_cmd }) do
+      post "/api/admin/reindex_db",
+           {},
+           {
+             "HTTP_HOST" => "localhost",
+             "rack.session" => {
+               user: {
+                 "user_id" => "admin-1",
+                 "roles" => [Auth::UserRole::ADMIN]
+               }
              }
            }
-         }
+    end
+  ensure
+    Thread.current[:_admin_route_test_timeline] = nil
 
     assert_equal 200, last_response.status
     body = JSON.parse(last_response.body)
     assert_equal true, body["ok"]
+    assert_equal true, body.dig("data", "synced")
+    assert_equal true, body.dig("data", "reindexed")
     assert_equal 1, @spy.reindex_db_calls
+    assert_equal %i[sync reindex], @timeline
+  end
+
+  def test_reindex_db_returns_500_when_sync_fails
+    sync_result = Cli::Service::Result.new(ok: false, exit_code: 12, stdout: "", stderr: "nope")
+    Cli::Commands::SyncPortfolioData.stub(:new, -> { Struct.new(:call).new(sync_result) }) do
+      post "/api/admin/reindex_db",
+           {},
+           {
+             "HTTP_HOST" => "localhost",
+             "rack.session" => {
+               user: {
+                 "user_id" => "admin-1",
+                 "roles" => [Auth::UserRole::ADMIN]
+               }
+             }
+           }
+    end
+
+    assert_equal 500, last_response.status
+    body = JSON.parse(last_response.body)
+    assert_equal false, body["ok"]
+    assert_equal "sync_failed", body.dig("error", "code")
+    assert_equal 0, @spy.reindex_db_calls
   end
 end
