@@ -5,23 +5,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 
-const baseTabs = [
+type NavTab = {
+  label: string;
+  href: string;
+  emphasize?: boolean;
+};
+
+const baseTabs: NavTab[] = [
   { label: "Home", href: "/" },
   { label: "Career", href: "/career" },
   { label: "MyThing", href: "/my-thing" },
-] as const;
+];
 
-const chatTab = { label: "Chat with my agent", href: "/chat", emphasize: true as const };
+const chatTab: NavTab = { label: "Chat with my agent", href: "/chat", emphasize: true };
 
 export default function Nav() {
   const pathname = usePathname();
   const { user } = useAuth();
 
-  const tabs = useMemo(() => {
+  const tabs = useMemo((): NavTab[] => {
     const isAdmin = Boolean(user?.roles?.includes("admin"));
     return [
-      ...baseTabs.map((t) => ({ ...t })),
-      ...(isAdmin ? [{ label: "Admin", href: "/admin" as const }] : []),
+      ...baseTabs,
+      ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
       chatTab,
     ];
   }, [user?.roles]);
