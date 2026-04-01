@@ -7,9 +7,24 @@ class QaServiceTest < Minitest::Test
       @hits = hits
     end
 
-    def search(query:, embedder:, k:, min_score:)
-      [query, embedder, k, min_score]
+    def search(**)
       @hits
+    end
+  end
+
+  class FakeChatroom
+    def initialize(messages)
+      @messages = messages
+    end
+
+    def get_messages(_user_id)
+      @messages
+    end
+
+    def add_question_and_answer(_user_id:, question:, answer:)
+      @messages ||= []
+      @messages << { "role" => "user", "content" => question }
+      @messages << { "role" => "assistant", "content" => answer }
     end
   end
 
@@ -43,11 +58,10 @@ class QaServiceTest < Minitest::Test
     hits = [{ id: "a", score: 0.9, metadata: { "k" => "v" }, content: "worked on X" }]
     service = Rag::QaService.new(
       index: FakeIndex.new(hits),
-      embedder: Object.new,
       llm_client: FakeLlm.new(configured: false)
     )
 
-    result = service.answer(question: "what did you do?")
+    result = service.answer(question: "what did you do?", user_id: "user-1")
 
     assert_equal "Q&A service is not configured.", result[:answer]
     assert_equal "a", result[:sources].first[:id]
@@ -58,11 +72,10 @@ class QaServiceTest < Minitest::Test
     hits = [{ id: "a", score: 0.9, metadata: {}, content: "worked on Slack alerts" }]
     service = Rag::QaService.new(
       index: FakeIndex.new(hits),
-      embedder: Object.new,
       llm_client: llm
     )
 
-    result = service.answer(question: "Tell me about Slack experience")
+    result = service.answer(question: "Tell me about Slack experience", user_id: "user-1")
 
     assert_match "summary:", result[:answer]
     refute_nil llm.last_user_prompt
@@ -75,11 +88,10 @@ class QaServiceTest < Minitest::Test
   def test_returns_empty_message_when_no_hits
     service = Rag::QaService.new(
       index: FakeIndex.new([]),
-      embedder: Object.new,
       llm_client: FakeLlm.new(configured: true)
     )
 
-    result = service.answer(question: "unknown")
+    result = service.answer(question: "unknown", user_id: "user-1")
 
     assert_equal "I could not find relevant information in the portfolio data.", result[:answer]
     assert_empty result[:sources]
@@ -101,11 +113,10 @@ class QaServiceTest < Minitest::Test
     ]
     service = Rag::QaService.new(
       index: FakeIndex.new(hits),
-      embedder: Object.new,
       llm_client: FakeLlm.new(configured: true, error: RuntimeError.new("boom"))
     )
 
-    result = service.answer(question: "what happened?")
+    result = service.answer(question: "what happened?", user_id: "user-1")
 
     assert_match "LLM summarization unavailable", result[:answer]
     refute_match "organization: Mappedin", result[:answer]
@@ -115,19 +126,19 @@ class QaServiceTest < Minitest::Test
   def test_passes_capped_history_to_llm
     with_env("MAX_CHAT_HISTORY" => "2") do
       hits = [{ id: "a", score: 0.9, metadata: {}, content: "ctx" }]
-      service = Rag::QaService.new(
-        index: FakeIndex.new(hits),
-        embedder: Object.new,
-        llm_client: FakeLlm.new(configured: true)
-      )
-
       hist = [
         { "role" => "user", "content" => "first" },
         { "role" => "assistant", "content" => "second" },
         { "role" => "user", "content" => "third" },
         { "role" => "assistant", "content" => "fourth" }
       ]
-      result = service.answer(question: "follow up", history: hist)
+      service = Rag::QaService.new(
+        index: FakeIndex.new(hits),
+        llm_client: FakeLlm.new(configured: true),
+        chatroom: FakeChatroom.new(hist)
+      )
+
+      result = service.answer(question: "follow up", user_id: "user-1")
 
       assert_match "hist=2", result[:answer]
     end

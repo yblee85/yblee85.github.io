@@ -1,32 +1,40 @@
+require_relative "../../lib/embeddings/client"
+require_relative "../../service/data/document_loader"
+
 module Vector
   class InMemoryIndex
     Row = Struct.new(:id, :content, :metadata, :vector)
 
-    def initialize
+    def initialize(embedder: Embeddings::Client.build)
+      @embedder = embedder
       @rows = []
+      @mutex = Mutex.new
     end
 
-    def build!(documents:, embedder:)
-      @rows = documents.map do |doc|
-        metadata = doc.fetch(:metadata)
-        embedding_text = build_embedding_text(
-          content: doc.fetch(:content),
-          metadata: metadata
-        )
+    def build!(documents: PortfolioData::DocumentLoader.load_all)
+      @mutex.synchronize do
+        @rows = documents.map do |doc|
+          metadata = doc.fetch(:metadata)
+          embedding_text = build_embedding_text(
+            content: doc.fetch(:content),
+            metadata: metadata
+          )
 
-        Row.new(
-          id: doc.fetch(:id),
-          content: doc.fetch(:content),
-          metadata: metadata,
-          vector: embed_text(embedder, embedding_text)
-        )
+          Row.new(
+            id: doc.fetch(:id),
+            content: doc.fetch(:content),
+            metadata: metadata,
+            vector: embed_text(embedding_text)
+          )
+        end
+        self
       end
-      self
     end
 
-    def search(query:, embedder:, k: 5, min_score: nil)
-      query_vector = embed_text(embedder, query)
-      scored = @rows.map do |row|
+    def search(query:, k: 5, min_score: nil)
+      rows = @mutex.synchronize { @rows }
+      query_vector = embed_text(query)
+      scored = rows.map do |row|
         score = cosine_similarity(query_vector, row.vector)
         row.to_h.merge(score: score)
       end
@@ -68,8 +76,8 @@ module Vector
       dot / (na * nb)
     end
 
-    def embed_text(embedder, text)
-      embedder.embed(text)
+    def embed_text(text)
+      @embedder.embed(text)
     end
   end
 end

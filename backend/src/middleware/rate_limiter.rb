@@ -28,7 +28,7 @@ module Middleware
 
       return @app.call(env) if user_id.empty?
 
-      unless @limiter.rate_limited?(user_id)
+      if @limiter.rate_limited?(user_id)
         body = Web::Response.error(
           code: "rate_limited",
           message: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user/ip"

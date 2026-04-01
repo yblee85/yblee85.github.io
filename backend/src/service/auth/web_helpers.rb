@@ -4,6 +4,7 @@ require "digest"
 require_relative "../../lib/config"
 require_relative "../../lib/web/response"
 require_relative "user_type"
+require_relative "user_role"
 
 module Auth
   module WebHelpers
@@ -52,13 +53,17 @@ module Auth
     def user_payload_from_omniauth(auth)
       info = auth["info"] || {}
       email = info["email"].to_s.strip.downcase
+
+      is_admin = Config.admin_users.include?(email)
+
       {
         "user_id" => hash_value(email),
         "sub" => (auth["uid"] || info["sub"]).to_s,
         "name" => info["name"],
         "email" => info["email"],
         "picture" => info["image"] || info["picture"],
-        "type" => UserType::OAUTH_USER
+        "type" => UserType::OAUTH_USER,
+        "roles" => is_admin ? [UserRole::ADMIN] : [UserRole::USER]
       }.compact
     end
 
@@ -66,7 +71,8 @@ module Auth
       {
         "user_id" => hash_value(ip),
         "name" => "Guest",
-        "type" => UserType::GUEST
+        "type" => UserType::GUEST,
+        "roles" => [UserRole::GUEST]
       }.compact
     end
 
