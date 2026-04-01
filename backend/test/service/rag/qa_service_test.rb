@@ -21,7 +21,7 @@ class QaServiceTest < Minitest::Test
       @messages
     end
 
-    def add_question_and_answer(user_id:, question:, answer:)
+    def add_question_and_answer(question:, answer:, **)
       @messages ||= []
       @messages << { "role" => "user", "content" => question }
       @messages << { "role" => "assistant", "content" => answer }
