@@ -18,31 +18,8 @@ EMBEDDING_BASE_URL="${EMBEDDING_BASE_URL:-http://localhost:8080}"
 EMBEDDING_STARTUP_TIMEOUT_SECS="${EMBEDDING_STARTUP_TIMEOUT_SECS:-120}"
 EMBEDDING_PROVIDER="${EMBEDDING_PROVIDER:-tei}"
 
-if [ -n "$REPO_NAME" ] && [ -n "$TOKEN" ]; then
-  echo "[startup] Fetching portfolio data from GitHub repo: ${REPO_NAME} (branch: ${BRANCH})"
-  TMP_DIR="/tmp/aboutme-data-repo"
-  rm -rf "$TMP_DIR"
-
-  AUTH_B64="$(printf "x-access-token:%s" "$TOKEN" | base64 | tr -d '\n')"
-  GIT_TERMINAL_PROMPT=0 GCM_INTERACTIVE=never git \
-    -c credential.helper= \
-    -c "http.extraHeader=Authorization: Basic ${AUTH_B64}" \
-    clone --depth 1 --branch "$BRANCH" \
-    "https://github.com/${REPO_NAME}.git" "$TMP_DIR"
-
-  SRC_DIR="${TMP_DIR}/data"
-  if [ ! -d "$SRC_DIR" ]; then
-    echo "[startup] ERROR: Expected data dir not found in repo: data/"
-    exit 1
-  fi
-
-  mkdir -p "$DATA_DIR"
-  rm -rf "${DATA_DIR:?}/"*
-  cp -R "$SRC_DIR"/. "$DATA_DIR"/
-  echo "[startup] Data sync complete -> ${DATA_DIR}"
-else
-  echo "[startup] GitHub data sync skipped (set GITHUB_ACCESS_TOKEN and ABOUTME_DATA_GITHUB_REPO_NAME to enable)"
-fi
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+sh "${SCRIPT_DIR}/script/sync_portfolio_data.sh"
 
 if [ "$EMBEDDING_PROVIDER" = "tei" ]; then
   # Wait until embeddings service is reachable before booting app.

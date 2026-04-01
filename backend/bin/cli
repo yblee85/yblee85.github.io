@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+COMMANDS = {
+  "sync-portfolio-data" => "Sync portfolio data repo (GitHub -> ABOUTME_DATA_DIR_PATH)"
+}.freeze
+
+def usage!
+  warn "Usage: bin/cli <command>"
+  $stderr.puts
+  warn "Commands:"
+  COMMANDS.each do |name, desc|
+    warn "  #{name.ljust(22)} #{desc}"
+  end
+  exit 2
+end
+
+cmd = ARGV.shift.to_s.strip
+usage! if cmd.empty? || %w[-h --help help].include?(cmd)
+
+case cmd
+when "sync-portfolio-data"
+  require_relative "../src/service/cli/commands/sync_portfolio_data"
+  result = Cli::Commands::SyncPortfolioData.new.call
+
+  $stdout.print(result.stdout.to_s) unless result.stdout.to_s.empty?
+  $stderr.print(result.stderr.to_s) unless result.stderr.to_s.empty?
+  exit(result.ok ? 0 : (result.exit_code || 1))
+else
+  warn "Unknown command: #{cmd}"
+  usage!
+end
