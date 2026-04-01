@@ -2,14 +2,21 @@ require_relative "../../lib/config"
 
 module Rag
   class QaService
-    def initialize(index:, embedder:, llm_client: nil)
+    def initialize(index:, llm_client: nil, chatroom: nil)
       @index = index
-      @embedder = embedder
       @llm_client = llm_client
+      @chatroom = chatroom
     end
 
-    def answer(question:, history: nil, k: 20, min_score: 0.2)
-      hits = @index.search(query: question, embedder: @embedder, k: k, min_score: min_score)
+    def answer(question:, user_id:, k: 20, min_score: 0.2)
+      history =
+        if @chatroom
+          @chatroom.get_messages(user_id)
+        else
+          []
+        end
+
+      hits = @index.search(query: question, k: k, min_score: min_score)
       contexts = hits.map { |h| format_hit_context(h) }
       user_prompt = generate_user_prompt(question: question, contexts: contexts)
       capped_history = normalize_history(history)
@@ -28,10 +35,16 @@ module Rag
           "Q&A service is not configured."
         end
 
+      @chatroom&.add_question_and_answer(user_id: user_id, question: question, answer: answer_text)
+
       {
         answer: answer_text,
         sources: hits.map { |h| { id: h[:id], score: h[:score], metadata: h[:metadata] } }
       }
+    end
+
+    def reindex_db
+      @index.build!
     end
 
     private

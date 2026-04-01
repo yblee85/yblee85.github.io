@@ -7,12 +7,14 @@ require_relative "lib/config"
 require_relative "lib/events/event_bus"
 require_relative "app/portfolio_container"
 require_relative "service/notifier/slack_listener"
+require_relative "service/auth/rate_limiter"
 require_relative "middleware/api_auth"
 require_relative "middleware/rate_limiter"
 
 require_relative "service/route/home_route"
 require_relative "service/route/auth_route"
 require_relative "service/route/chat_route"
+require_relative "service/route/admin_route"
 
 begin
   CONTAINER = App::PortfolioContainer.build
@@ -32,7 +34,7 @@ class PortfolioApi < Sinatra::Base
       same_site: Config.rack_env == "production" ? :none : :lax
 
   use Middleware::ApiAuth
-  use Middleware::RateLimiter, limiter: CONTAINER.rate_limiter, rules: Config.rate_limiter_rules
+  use Middleware::RateLimiter, limiter: Auth::RateLimiter.new, rules: Config.rate_limiter_rules
 
   if Config.auth0_configured?
     use OmniAuth::Builder do
@@ -84,6 +86,7 @@ class PortfolioApi < Sinatra::Base
   register Route::HomeRoute
   register Route::AuthRoute
   register Route::ChatRoute
+  register Route::AdminRoute
 end
 
 PortfolioApi.run! if $PROGRAM_NAME == __FILE__

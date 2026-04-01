@@ -4,9 +4,8 @@ module PortfolioData
   module DocumentLoader
     module_function
 
-    # Loads every *.json file under data_dir and returns normalized docs:
-    # [{ id:, content:, metadata: }, ...] (JSON uses `contents` array per document, joined then chunked)
-    def load_all(data_dir:, chunk_size_chars: 2000, chunk_overlap_percent: 10)
+    def load_all(data_dir: Config.aboutme_data_dir_path, chunk_size_chars: Config.rag_chunk_size_chars,
+                 chunk_overlap_percent: Config.rag_chunk_overlap_percent)
       docs = []
       Dir.glob(File.join(data_dir, "**", "*.json")).each do |path|
         parsed = JSON.parse(File.read(path))

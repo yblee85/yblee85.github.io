@@ -16,10 +16,7 @@ module Route
         message = payload["message"].to_s.strip
         halt 400, Web::Response.error(code: "bad_request", message: "message is required").to_json if message.empty?
 
-        chatroom = settings.container.chatroom
-        history = chatroom.get_messages(user_id)
-        response = settings.container.qa.answer(question: message, history: history)
-        chatroom.add_question_and_answer(user_id: user_id, question: message, answer: response[:answer])
+        response = settings.container.qa.answer(question: message, user_id: user_id)
         Web::Response.success(data: response).to_json
       rescue Embeddings::VoyageClient::RateLimitError => e
         halt 429, Web::Response.error(

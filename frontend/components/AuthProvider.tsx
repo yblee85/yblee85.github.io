@@ -16,6 +16,7 @@ export type SessionUser = {
   name?: string;
   email?: string;
   picture?: string;
+  roles?: string[];
 };
 
 type AuthContextValue = {

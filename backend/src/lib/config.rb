@@ -110,6 +110,10 @@ module Config
     [{ http_method: "POST", path: "/api/chat", enabled: true }]
   end
 
+  def admin_users
+    ENV["ADMIN_USER"].to_s.strip.split(",").map(&:strip).reject(&:empty?)
+  end
+
   def slack_configured?
     !slack_webhook_url.strip.empty? &&
       !slack_channel.strip.empty?

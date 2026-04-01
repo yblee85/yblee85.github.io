@@ -1,17 +1,36 @@
 "use client";
 
+import { useAuth } from "@/components/AuthProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
-const tabs = [
+type NavTab = {
+  label: string;
+  href: string;
+  emphasize?: boolean;
+};
+
+const baseTabs: NavTab[] = [
   { label: "Home", href: "/" },
   { label: "Career", href: "/career" },
   { label: "MyThing", href: "/my-thing" },
-  { label: "Chat with my agent", href: "/chat", emphasize: true },
 ];
+
+const chatTab: NavTab = { label: "Chat with my agent", href: "/chat", emphasize: true };
 
 export default function Nav() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const tabs = useMemo((): NavTab[] => {
+    const isAdmin = Boolean(user?.roles?.includes("admin"));
+    return [
+      ...baseTabs,
+      ...(isAdmin ? [{ label: "Admin", href: "/admin" }] : []),
+      chatTab,
+    ];
+  }, [user?.roles]);
 
   return (
     <nav className="border-b border-gray-200">
