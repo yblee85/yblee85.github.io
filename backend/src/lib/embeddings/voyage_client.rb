@@ -27,7 +27,7 @@ module Embeddings
       end
     end
 
-    def embed(text)
+    def embed(text, input_type: "document")
       attempts = 0
 
       begin
@@ -35,7 +35,7 @@ module Embeddings
           req.body = {
             model: @model,
             input: [text.to_s],
-            input_type: "document"
+            input_type: input_type
           }
         end
 

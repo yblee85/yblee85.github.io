@@ -14,7 +14,7 @@ module Embeddings
       end
     end
 
-    def embed(text)
+    def embed(text, input_type: "document")
       res = @conn.post("/embed") { |req| req.body = { inputs: text } }
       parse_embedding(JSON.parse(res.body))
     rescue Faraday::Error => e

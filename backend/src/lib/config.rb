@@ -26,7 +26,7 @@ module Config
   end
 
   def voyage_model
-    string("VOYAGE_MODEL", default: "voyage-4-lite")
+    string("VOYAGE_MODEL", default: "voyage-4")
   end
 
   def rag_chunk_size_chars
