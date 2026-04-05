@@ -9,6 +9,7 @@ require_relative "app/portfolio_container"
 require_relative "service/notifier/slack_listener"
 require_relative "service/auth/rate_limiter"
 require_relative "middleware/api_auth"
+require_relative "middleware/csrf_protection"
 require_relative "middleware/rate_limiter"
 
 require_relative "service/route/home_route"
@@ -34,6 +35,7 @@ class PortfolioApi < Sinatra::Base
       same_site: Config.rack_env == "production" ? :none : :lax
 
   use Middleware::ApiAuth
+  use Middleware::CsrfProtection
   use Middleware::RateLimiter, limiter: Auth::RateLimiter.new, rules: Config.rate_limiter_rules
 
   if Config.auth0_configured?

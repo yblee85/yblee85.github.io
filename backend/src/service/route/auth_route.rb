@@ -3,6 +3,7 @@ require_relative "../../lib/config"
 require_relative "../../lib/web/response"
 require_relative "../../service/auth/web_helpers"
 require_relative "../../service/auth/user_type"
+require_relative "../../service/auth/csrf_token"
 
 module Route
   module AuthRoute
@@ -34,6 +35,7 @@ module Route
         user = user_payload_from_omniauth(auth)
 
         session[:user] = user
+        Auth::CsrfToken.ensure!(session)
 
         Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"] })
 
@@ -58,7 +60,8 @@ module Route
       app.get "/auth/me" do
         halt 401, Web::Response.error(code: "unauthorized", message: "not authenticated").to_json if session[:user].nil?
 
-        Web::Response.success(data: { authenticated: true, user: session[:user] }).to_json
+        token = Auth::CsrfToken.ensure!(session)
+        Web::Response.success(data: { authenticated: true, user: session[:user], csrf_token: token }).to_json
       end
     end
 
@@ -88,6 +91,7 @@ module Route
       halt 400, Web::Response.error(code: "bad_request", message: "could not determine client ip").to_json if ip.empty?
       user = guest_user_payload(ip)
       session[:user] = user
+      Auth::CsrfToken.ensure!(session)
 
       Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"] })
 

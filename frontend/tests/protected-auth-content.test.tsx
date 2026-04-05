@@ -8,7 +8,11 @@ function mockFetchMe(authenticated: boolean, user?: { name?: string; email?: str
     ok: authenticated,
     json: async () =>
       authenticated
-        ? { authenticated: true, user: user ?? { name: "Test User", email: "test@example.com" } }
+        ? {
+            authenticated: true,
+            user: user ?? { name: "Test User", email: "test@example.com" },
+            csrf_token: "mock-csrf-token",
+          }
         : { authenticated: false },
   });
 }
@@ -134,6 +138,7 @@ describe("ProtectedAuthContent", () => {
         json: async () => ({
           authenticated: true,
           user: { name: "Test User", email: "test@example.com" },
+          csrf_token: "mock-csrf-token",
         }),
       })
       .mockResolvedValueOnce({
@@ -141,6 +146,7 @@ describe("ProtectedAuthContent", () => {
         json: async () => ({
           authenticated: true,
           user: { name: "Test User", email: "test@example.com" },
+          csrf_token: "mock-csrf-token",
         }),
       })
       .mockResolvedValueOnce({
@@ -172,7 +178,9 @@ describe("ProtectedAuthContent", () => {
       (c) => typeof c[0] === "string" && (c[0] as string).includes("/api/chat"),
     );
     expect(chatCall).toBeDefined();
-    const body = JSON.parse((chatCall![1] as { body: string }).body);
+    const opts = chatCall![1] as { body: string; headers: Record<string, string> };
+    const body = JSON.parse(opts.body);
     expect(body).toEqual({ message: "What did you work on?" });
+    expect(opts.headers["X-CSRF-Token"]).toBe("mock-csrf-token");
   });
 });

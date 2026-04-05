@@ -204,12 +204,21 @@ export default function ProtectedAuthContent() {
 
     try {
       // Ensure session cookie is up-to-date before calling /api/chat.
-      await refresh();
+      const { csrfToken: token } = await refresh();
+      if (!token) {
+        setChat((prev) => prev.slice(0, -1));
+        setMessage(text);
+        setError("Could not obtain security token. Try refreshing the page.");
+        return;
+      }
 
       const res = await fetch(`${base}/api/chat`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": token,
+        },
         body: JSON.stringify({ message: text }),
       });
       const body = (await res.json().catch(() => ({}))) as {

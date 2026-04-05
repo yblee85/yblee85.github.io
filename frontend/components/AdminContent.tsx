@@ -10,7 +10,7 @@ function isAdminUser(user: { roles?: string[] } | null): boolean {
 }
 
 export default function AdminContent() {
-  const { loading, authenticated, user } = useAuth();
+  const { loading, authenticated, user, refresh } = useAuth();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -26,10 +26,19 @@ export default function AdminContent() {
     setMessage(null);
     setError(null);
     try {
+      const { csrfToken: token } = await refresh();
+      if (!token) {
+        setError("Could not obtain security token. Try refreshing the page.");
+        return;
+      }
+
       const res = await fetch(`${base}/api/admin/reindex_db`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": token,
+        },
         body: "{}",
       });
       const body = (await res.json().catch(() => ({}))) as { ok?: boolean; error?: { message?: string } };

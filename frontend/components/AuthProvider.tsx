@@ -19,11 +19,16 @@ export type SessionUser = {
   roles?: string[];
 };
 
+type AuthRefreshResult = { csrfToken: string | null };
+
 type AuthContextValue = {
   loading: boolean;
   authenticated: boolean;
   user: SessionUser | null;
-  refresh: () => Promise<void>;
+  /** Synchronizer token for mutating API requests (X-CSRF-Token). Null when logged out. */
+  csrfToken: string | null;
+  /** Returns the CSRF token from the same `/auth/me` response used to refresh state (avoids stale closure after await). */
+  refresh: () => Promise<AuthRefreshResult>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -46,15 +51,17 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
+  const [csrfToken, setCsrfToken] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (): Promise<AuthRefreshResult> => {
     const base = getApiBaseUrl();
     if (!base) {
       setAuthenticated(false);
       setUser(null);
+      setCsrfToken(null);
       setLoading(false);
       setNavSessionFlag(false);
-      return;
+      return { csrfToken: null };
     }
 
     try {
@@ -62,9 +69,11 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       const body = (await res.json()) as {
         authenticated?: boolean;
         user?: SessionUser;
+        csrf_token?: string;
         data?: {
           authenticated?: boolean;
           user?: SessionUser;
+          csrf_token?: string;
         };
       };
       const normalized = body.data ?? body;
@@ -72,16 +81,26 @@ export default function AuthProvider({ children }: PropsWithChildren) {
       if (res.ok && normalized.authenticated && normalized.user) {
         setAuthenticated(true);
         setUser(normalized.user);
+        const tok =
+          typeof normalized.csrf_token === "string" && normalized.csrf_token.length > 0
+            ? normalized.csrf_token
+            : null;
+        setCsrfToken(tok);
         setNavSessionFlag(true);
-      } else {
-        setAuthenticated(false);
-        setUser(null);
-        setNavSessionFlag(false);
+        return { csrfToken: tok };
       }
+
+      setAuthenticated(false);
+      setUser(null);
+      setCsrfToken(null);
+      setNavSessionFlag(false);
+      return { csrfToken: null };
     } catch {
       setAuthenticated(false);
       setUser(null);
+      setCsrfToken(null);
       setNavSessionFlag(false);
+      return { csrfToken: null };
     } finally {
       setLoading(false);
     }
@@ -92,8 +111,8 @@ export default function AuthProvider({ children }: PropsWithChildren) {
   }, [refresh]);
 
   const value = useMemo(
-    () => ({ loading, authenticated, user, refresh }),
-    [loading, authenticated, user, refresh],
+    () => ({ loading, authenticated, user, csrfToken, refresh }),
+    [loading, authenticated, user, csrfToken, refresh],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
