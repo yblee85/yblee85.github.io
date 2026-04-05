@@ -10,7 +10,8 @@ const mockUseAuth = vi.fn(() => ({
   loading: false,
   authenticated: false,
   user: null as { roles?: string[] } | null,
-  refresh: vi.fn(),
+  csrfToken: null,
+  refresh: vi.fn().mockResolvedValue({ csrfToken: null }),
 }));
 
 vi.mock("@/components/AuthProvider", async (importOriginal) => {
@@ -27,7 +28,8 @@ describe("Nav", () => {
       loading: false,
       authenticated: false,
       user: null,
-      refresh: vi.fn(),
+      csrfToken: null,
+      refresh: vi.fn().mockResolvedValue({ csrfToken: null }),
     });
   });
 
@@ -58,7 +60,8 @@ describe("Nav", () => {
       loading: false,
       authenticated: true,
       user: { name: "A", roles: ["admin"] },
-      refresh: vi.fn(),
+      csrfToken: null,
+      refresh: vi.fn().mockResolvedValue({ csrfToken: null }),
     });
     render(<Nav />);
     expect(screen.getByRole("link", { name: "Admin" })).toBeInTheDocument();

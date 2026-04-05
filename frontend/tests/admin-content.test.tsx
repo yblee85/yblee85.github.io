@@ -10,7 +10,8 @@ const mockUseAuth = vi.fn(() => ({
   loading: false,
   authenticated: true,
   user: { name: "Admin", roles: ["admin"] },
-  refresh: vi.fn(),
+  csrfToken: "mock-csrf-token",
+  refresh: vi.fn().mockResolvedValue({ csrfToken: "mock-csrf-token" }),
 }));
 
 vi.mock("@/components/AuthProvider", async (importOriginal) => {
@@ -34,7 +35,8 @@ describe("AdminContent", () => {
       loading: false,
       authenticated: true,
       user: { name: "Admin", roles: ["admin"] },
-      refresh: vi.fn(),
+      csrfToken: "mock-csrf-token",
+      refresh: vi.fn().mockResolvedValue({ csrfToken: "mock-csrf-token" }),
     });
   });
 
@@ -49,6 +51,9 @@ describe("AdminContent", () => {
         expect.objectContaining({
           method: "POST",
           credentials: "include",
+          headers: expect.objectContaining({
+            "X-CSRF-Token": "mock-csrf-token",
+          }),
         }),
       );
     });

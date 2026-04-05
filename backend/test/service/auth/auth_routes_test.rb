@@ -50,7 +50,36 @@ class AuthRoutesTest < Minitest::Test
         assert_equal "Guest", user["name"] || user[:name]
         assert_equal "guest", user["type"] || user[:type]
         refute_nil user["user_id"] || user[:user_id]
+        csrf = sess[:csrf_token] || sess["csrf_token"]
+        refute_nil csrf
+        refute_empty csrf.to_s
       end
+    end
+  end
+
+  def test_me_returns_401_when_not_authenticated
+    with_env(oauth_env) do
+      get "/auth/me", {}, { "HTTP_HOST" => "localhost" }
+      assert_equal 401, last_response.status
+    end
+  end
+
+  def test_me_returns_user_and_csrf_token
+    with_env(oauth_env) do
+      get "/auth/me", {}, {
+        "HTTP_HOST" => "localhost",
+        "rack.session" => { user: { "user_id" => "u-1", "name" => "Alice" } }
+      }
+      assert_equal 200, last_response.status
+      body = JSON.parse(last_response.body)
+      assert_equal true, body["ok"]
+      assert_equal true, body.dig("data", "authenticated")
+      assert_equal "Alice", body.dig("data", "user", "name")
+      tok = body.dig("data", "csrf_token")
+      refute_nil tok
+      refute_empty tok.to_s
+      sess = last_request.env["rack.session"]
+      assert_equal tok, sess[:csrf_token] || sess["csrf_token"]
     end
   end
 
