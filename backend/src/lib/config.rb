@@ -37,6 +37,14 @@ module Config
     float("RAG_CHUNK_OVERLAP_PERCENT", default: 10.0, min: 0.0, max: 99.0)
   end
 
+  def rag_min_score
+    float("RAG_MIN_SCORE", default: 0.15, min: 0.0, max: 1.0)
+  end
+
+  def rag_k
+    integer("RAG_K", default: 15, min: 1)
+  end
+
   def anthropic_api_key
     ENV["ANTHROPIC_API_KEY"]
   end

@@ -26,11 +26,11 @@ Hosted in digitalocean (App Platform)
 
 4. At least one of following upstream IdPs
 
-   - Google Developer console account (Auth Platform): if you want `sign in with google`
+   - Google Developer console account (Auth Platform): if you want `Continue with google`
 
-   - Github OAuth app (Developer settings): if you want `sign in with github`
+   - Github OAuth app (Developer settings): if you want `Continue with github`
 
-   - Linkedin Developer, Company page: if you want `sign in with linkedin`
+   - Linkedin Developer, Company page: if you want `Continue with linkedin`
 
 ## Run demo
 

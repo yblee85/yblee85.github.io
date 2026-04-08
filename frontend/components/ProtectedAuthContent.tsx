@@ -127,10 +127,10 @@ export default function ProtectedAuthContent() {
                 if (url) window.location.assign(url);
               }}
               className="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-800 shadow-sm transition hover:bg-gray-50 hover:shadow"
-              aria-label="Sign in with Google"
+              aria-label="Continue with Google"
             >
               <GoogleIcon className="h-5 w-5 shrink-0" />
-              Sign in with Google
+              Continue with Google
             </button>
             <button
               type="button"
@@ -139,10 +139,10 @@ export default function ProtectedAuthContent() {
                 if (url) window.location.assign(url);
               }}
               className="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-gray-800 bg-gray-900 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-gray-800"
-              aria-label="Sign in with GitHub"
+              aria-label="Continue with GitHub"
             >
               <GitHubIcon className="h-5 w-5 shrink-0 text-white" />
-              Sign in with GitHub
+              Continue with GitHub
             </button>
             <button
               type="button"
@@ -151,10 +151,10 @@ export default function ProtectedAuthContent() {
                 if (url) window.location.assign(url);
               }}
               className="inline-flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-[#0A66C2] bg-[#0A66C2] px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-[#004182]"
-              aria-label="Sign in with LinkedIn"
+              aria-label="Continue with LinkedIn"
             >
               <LinkedInIcon className="h-5 w-5 shrink-0 text-white" />
-              Sign in with LinkedIn
+              Continue with LinkedIn
             </button>
 
             <div className="flex items-center gap-3 py-1">
@@ -277,7 +277,12 @@ export default function ProtectedAuthContent() {
       <div className="rounded-xl border border-indigo-100 bg-indigo-50/40 p-4">
         <div className="space-y-3 max-h-[420px] overflow-y-auto">
           {chat.length === 0 ? (
-            <p className="text-sm text-gray-600">Start by asking a question below.</p>
+            <div className="space-y-1">
+              <p className="text-sm text-gray-600">Start by asking a question below.</p>
+              <p className="text-sm text-gray-500">
+                Can you summarize his skills? What do his team members think of him?
+              </p>
+            </div>
           ) : (
             chat.map((item, index) => (
               <div
