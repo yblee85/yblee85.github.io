@@ -35,9 +35,9 @@ describe("ProtectedAuthContent", () => {
       expect(screen.queryByText("Checking authentication...")).not.toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: /sign in with google/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sign in with github/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /sign in with linkedin/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue with google/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue with github/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /continue with linkedin/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /continue as guest/i })).toBeInTheDocument();
   });
 
@@ -59,7 +59,7 @@ describe("ProtectedAuthContent", () => {
       expect(screen.queryByText("Checking authentication...")).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /sign in with google/i }));
+    fireEvent.click(screen.getByRole("button", { name: /continue with google/i }));
 
     expect(assign).toHaveBeenCalledTimes(1);
     const url = assign.mock.calls[0][0] as string;
@@ -85,7 +85,7 @@ describe("ProtectedAuthContent", () => {
       expect(screen.queryByText("Checking authentication...")).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /sign in with github/i }));
+    fireEvent.click(screen.getByRole("button", { name: /continue with github/i }));
 
     const url = assign.mock.calls[0][0] as string;
     expect(url).toContain("connection=github");
@@ -109,7 +109,7 @@ describe("ProtectedAuthContent", () => {
       expect(screen.queryByText("Checking authentication...")).not.toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /sign in with linkedin/i }));
+    fireEvent.click(screen.getByRole("button", { name: /continue with linkedin/i }));
 
     const url = assign.mock.calls[0][0] as string;
     expect(url).toContain("connection=linkedin");

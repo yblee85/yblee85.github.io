@@ -41,6 +41,7 @@ module Vector
 
       ranked = scored.sort_by { |r| -r[:score] }
       ranked = ranked.select { |r| r[:score] >= min_score } if min_score
+
       ranked.first(k)
     end
 
