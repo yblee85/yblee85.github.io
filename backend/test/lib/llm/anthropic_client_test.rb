@@ -2,26 +2,39 @@ require_relative "../../test_helper"
 require_relative "../../../src/lib/llm/anthropic_client"
 
 class AnthropicClientTest < Minitest::Test
-  FakeResponse = Struct.new(:chat_completion)
+  FakeTextBlock = Struct.new(:text)
+  FakeMessage = Struct.new(:content)
 
-  class RecordingLlm
+  class RecordingMessages
     attr_reader :calls
 
     def initialize
       @calls = []
     end
 
-    def chat(**params)
+    def create(**params)
       @calls << params
-      FakeResponse.new("ok")
+      FakeMessage.new(content: [FakeTextBlock.new(text: "ok")])
+    end
+  end
+
+  class RecordingClient
+    attr_reader :messages_api
+
+    def initialize
+      @messages_api = RecordingMessages.new
+    end
+
+    def messages
+      @messages_api
     end
   end
 
   def build_client
     client = Llm::AnthropicClient.new(api_key: "test-key", model: "test-model")
-    recorder = RecordingLlm.new
-    client.instance_variable_set(:@llm, recorder)
-    [client, recorder]
+    recorder = RecordingClient.new
+    client.instance_variable_set(:@client, recorder)
+    [client, recorder.messages_api]
   end
 
   def test_omits_system_when_nil
@@ -30,7 +43,7 @@ class AnthropicClientTest < Minitest::Test
     client.summarize(user_prompt: "hi", system_prompt: nil, history: [])
 
     params = recorder.calls.last
-    refute params.key?(:system)
+    refute params.key?(:system_)
   end
 
   def test_omits_system_when_blank
@@ -39,7 +52,7 @@ class AnthropicClientTest < Minitest::Test
     client.summarize(user_prompt: "hi", system_prompt: "   ", history: [])
 
     params = recorder.calls.last
-    refute params.key?(:system)
+    refute params.key?(:system_)
   end
 
   def test_sends_system_when_present
@@ -48,7 +61,7 @@ class AnthropicClientTest < Minitest::Test
     client.summarize(user_prompt: "hi", system_prompt: "SYS", history: [])
 
     params = recorder.calls.last
-    assert_equal "SYS", params[:system]
+    assert_equal "SYS", params[:system_]
   end
 
   def test_history_is_passed_as_messages_before_user_prompt
@@ -64,9 +77,9 @@ class AnthropicClientTest < Minitest::Test
     messages = params[:messages]
     assert_equal(
       [
-        { role: "user", content: "u1" },
-        { role: "assistant", content: "a1" },
-        { role: "user", content: "final" }
+        { role: :user, content: "u1" },
+        { role: :assistant, content: "a1" },
+        { role: :user, content: "final" }
       ],
       messages
     )

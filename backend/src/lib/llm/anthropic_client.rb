@@ -1,4 +1,4 @@
-require "langchain"
+require "anthropic"
 require_relative "../config"
 
 module Llm
@@ -8,7 +8,7 @@ module Llm
     def initialize(api_key: Config.anthropic_api_key, model: Config.anthropic_model)
       @api_key = api_key
       @model = model
-      @llm = Langchain::LLM::Anthropic.new(api_key: @api_key) if configured?
+      @client = Anthropic::Client.new(api_key: @api_key) if configured?
     end
 
     def configured?
@@ -27,20 +27,20 @@ module Llm
         next if content.strip.empty?
         next unless %w[user assistant].include?(role)
 
-        messages << { role: role, content: content }
+        messages << { role: role.to_sym, content: content }
       end
-      messages << { role: "user", content: user_prompt }
+      messages << { role: :user, content: user_prompt }
 
-      chat_params = {
+      params = {
         messages: messages,
         model: @model,
         max_tokens: 400,
         temperature: 0.1
       }
       system_text = system_prompt.to_s.strip
-      chat_params[:system] = system_text unless system_text.empty?
+      params[:system_] = system_text unless system_text.empty?
 
-      response = @llm.chat(**chat_params)
+      response = @client.messages.create(**params)
 
       extract_text(response)
     rescue StandardError => e
@@ -50,8 +50,10 @@ module Llm
     private
 
     def extract_text(response)
-      from_typed = text_from_langchain_response(response)
-      return from_typed if from_typed
+      if response.respond_to?(:content)
+        parts = Array(response.content).map { |block| text_from_content_block(block) }.compact
+        return parts.join("\n") unless parts.empty?
+      end
 
       payload = normalize_to_hash(response)
       from_payload = text_from_content_payload(payload)
@@ -60,14 +62,13 @@ module Llm
       response.to_s
     end
 
-    def text_from_langchain_response(response)
-      if response.respond_to?(:chat_completion) && !response.chat_completion.to_s.strip.empty?
-        return response.chat_completion
-      end
+    def text_from_content_block(block)
+      return block.text if block.respond_to?(:text) && block.text.is_a?(String) && !block.text.strip.empty?
 
-      if response.respond_to?(:completion)
-        completion_value = response.completion
-        return completion_value if completion_value.is_a?(String) && !completion_value.strip.empty?
+      if block.is_a?(Hash)
+        return block[:text] || block["text"] if block[:type] == :text || block["type"] == "text"
+
+        return block[:text] || block["text"]
       end
 
       nil
@@ -75,7 +76,7 @@ module Llm
 
     def text_from_content_payload(payload)
       content = payload[:content] || payload["content"]
-      return content.map { |part| part[:text] || part["text"] }.compact.join("\n") if content.is_a?(Array)
+      return content.map { |part| text_from_content_block(part) }.compact.join("\n") if content.is_a?(Array)
 
       completion = payload[:completion] || payload["completion"]
       return completion if completion.is_a?(String) && !completion.strip.empty?
