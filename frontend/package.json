@@ -2,6 +2,9 @@
   "name": "portfolio-tmp",
   "version": "0.1.0",
   "private": true,
+  "overrides": {
+    "eslint-plugin-react": "github:jsx-eslint/eslint-plugin-react#012ec39f962627d5312e9fbaee3eb41d9a4d8bb6"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -23,7 +26,7 @@
     "@types/node": "^25",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^10",
+    "eslint": "^10.0.0",
     "eslint-config-next": "16.2.2",
     "jsdom": "^29.0.1",
     "tailwindcss": "^4",
