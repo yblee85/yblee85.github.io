@@ -151,7 +151,7 @@ describe("ProtectedAuthContent", () => {
       })
       .mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ answer: "Hello from backend" }),
+        json: async () => ({ answer: "Hello **from backend**\n\n- Built APIs\n- Improved reliability" }),
       });
 
     render(
@@ -171,7 +171,9 @@ describe("ProtectedAuthContent", () => {
 
     await waitFor(() => {
       expect(screen.getByText("What did you work on?")).toBeInTheDocument();
-      expect(screen.getByText("Hello from backend")).toBeInTheDocument();
+      expect(screen.getByText("from backend")).toBeInTheDocument();
+      expect(screen.getByText("Built APIs")).toBeInTheDocument();
+      expect(screen.getByText("Improved reliability")).toBeInTheDocument();
     });
 
     const chatCall = (global.fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.find(
