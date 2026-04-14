@@ -59,6 +59,8 @@ module Rag
         Write like a helpful human in a conversation: natural phrasing, occasional contractions, and no robotic labels (except the STAR labels in the section below when you use STAR).
         Use short paragraphs (1-2 sentences each). Insert a blank line between paragraphs for readability.
         If listing multiple items, prefer a short bullet list.
+        Format the final response as Markdown (CommonMark/GFM-style) so UI clients can render it with headings, bold text, and bullet lists.
+        Do not wrap the whole answer in a fenced code block.
 
         ## Depth (not too short, not too long)
         Aim for **recruiter-useful specificity** when the snippets allow it: organization/role, the problem or goal, what he did (tech, scope), and a concrete outcome or signal (scale, metric, reliability, cost, users) if present in context.

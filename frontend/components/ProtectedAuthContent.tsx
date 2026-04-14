@@ -4,6 +4,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { getApiBaseUrl } from "@/lib/api";
 import { Open_Sans } from "next/font/google";
 import { FormEvent, KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const openSans = Open_Sans({ subsets: ["latin"] });
 
@@ -70,6 +72,35 @@ function guestLoginUrl(): string | null {
   u.searchParams.set("guest", "true");
   u.searchParams.set("return_to", window.location.href);
   return u.toString();
+}
+
+function AssistantMarkdownMessage({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
+        ul: ({ children }) => <ul className="mb-2 list-disc pl-5 last:mb-0">{children}</ul>,
+        ol: ({ children }) => <ol className="mb-2 list-decimal pl-5 last:mb-0">{children}</ol>,
+        li: ({ children }) => <li className="mb-1">{children}</li>,
+        a: ({ children, href }) => (
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="underline decoration-indigo-400 underline-offset-2 hover:decoration-indigo-600"
+          >
+            {children}
+          </a>
+        ),
+        code: ({ children }) => (
+          <code className="rounded bg-indigo-50 px-1 py-0.5 text-[0.92em]">{children}</code>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 export default function ProtectedAuthContent() {
@@ -247,7 +278,20 @@ export default function ProtectedAuthContent() {
 
   const onMessageKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key !== "Enter") return;
-    if (!event.ctrlKey && !event.metaKey) return;
+
+    if (event.ctrlKey || event.metaKey) {
+      // Explicitly insert a newline for Ctrl/Cmd+Enter so behavior is consistent.
+      event.preventDefault();
+      const textarea = event.currentTarget;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      setMessage((prev) => `${prev.slice(0, start)}\n${prev.slice(end)}`);
+      requestAnimationFrame(() => {
+        textarea.selectionStart = start + 1;
+        textarea.selectionEnd = start + 1;
+      });
+      return;
+    }
 
     event.preventDefault();
     if (!canSend) return;
@@ -296,7 +340,13 @@ export default function ProtectedAuthContent() {
                 <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
                   {item.role === "user" ? "You" : "Agent"}
                 </p>
-                <p className="whitespace-pre-wrap text-gray-800">{item.content}</p>
+                <div className="text-gray-800">
+                  {item.role === "assistant" ? (
+                    <AssistantMarkdownMessage content={item.content} />
+                  ) : (
+                    <p className="whitespace-pre-wrap">{item.content}</p>
+                  )}
+                </div>
               </div>
             ))
           )}
