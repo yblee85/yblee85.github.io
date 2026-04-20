@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
-import MyThingPage from "@/app/my-thing/page";
+import PersonalPage from "@/app/personal/page";
 import { personalExperience } from "@/media/me/aboutme";
 
-describe("MyThing page", () => {
+describe("Personal page", () => {
   it("renders personal experience entries", () => {
-    render(<MyThingPage />);
+    render(<PersonalPage />);
 
-    expect(screen.getByRole("heading", { name: "MyThing" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Personal" })).toBeInTheDocument();
     expect(screen.getByText(personalExperience[0].company)).toBeInTheDocument();
     expect(screen.getByText(personalExperience[1].company)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Related article" })).toHaveAttribute(

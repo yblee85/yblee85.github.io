@@ -43,11 +43,11 @@ describe("Nav", () => {
     expect(screen.getByRole("link", { name: "Chat with my agent" })).toHaveAttribute("href", "/chat");
   });
 
-  it("shows Home, Career, and MyThing links", () => {
+  it("shows Home, Career, and Personal links", () => {
     render(<Nav />);
     expect(screen.getByRole("link", { name: "Home" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Career" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "MyThing" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Personal" })).toBeInTheDocument();
   });
 
   it("does not show Admin tab when user is not admin", () => {

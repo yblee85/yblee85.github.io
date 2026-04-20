@@ -83,18 +83,38 @@ const experience = [
     media: [
       {
         type: "image",
-        url: "/media/images/rt7-reports.png",
-        description: "BI Analytics Platform - Sales reports",
+        url: "/media/images/rt7-management-reports-1.png",
+        description: "BI analytics platform - report dashboard",
       },
       {
         type: "image",
-        url: "/media/images/rt7-inventory-management.png",
+        url: "/media/images/rt7-management-reports-2.png",
+        description: "BI analytics platform - detailed reports",
+      },
+      {
+        type: "image",
+        url: "/media/images/rt7-management-inventory.png",
         description: "Inventory management",
       },
       {
         type: "image",
-        url: "/media/images/rt7-menu-management.png",
+        url: "/media/images/rt7-management-menu.png",
         description: "Menu management",
+      },
+      {
+        type: "image",
+        url: "/media/images/rt7-management-campaigns.png",
+        description: "Campaign management",
+      },
+      {
+        type: "image",
+        url: "/media/images/rt7-management-employees.png",
+        description: "Employee management",
+      },
+      {
+        type: "image",
+        url: "/media/images/rt7-management-rewards.png",
+        description: "Rewards management",
       },
       {
         type: "image",
@@ -131,7 +151,7 @@ const personalExperience = [
   {
     company: "MaRS Energy Hackathon",
     role: "Backend Developer",
-    period: "Sep 2023 – Sep 2023",
+    period: "Sep 2013 – Sep 2013",
     location: "Toronto, ON",
     bullets: [
       "Built a backend for a mobile app to help people reduce cost of energy consumption.",
