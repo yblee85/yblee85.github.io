@@ -14,7 +14,7 @@ type NavTab = {
 const baseTabs: NavTab[] = [
   { label: "Home", href: "/" },
   { label: "Career", href: "/career" },
-  { label: "MyThing", href: "/my-thing" },
+  { label: "Personal", href: "/personal" },
 ];
 
 const chatTab: NavTab = { label: "Chat with my agent", href: "/chat", emphasize: true };

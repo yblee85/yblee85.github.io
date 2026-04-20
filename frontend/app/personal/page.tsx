@@ -3,15 +3,15 @@ import { personalExperience } from "@/media/me/aboutme";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "MyThing · Yunbo Lee",
+  title: "Personal · Yunbo Lee",
   description: "Certifications, learning, and community outside day-to-day work.",
 };
 
-export default function MyThingPage() {
+export default function PersonalPage() {
   return (
     <div className="space-y-12">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">MyThing</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Personal</h1>
         <p className="mt-2 text-sm text-gray-500">
           Certifications, learning, and community outside day-to-day work.
         </p>
