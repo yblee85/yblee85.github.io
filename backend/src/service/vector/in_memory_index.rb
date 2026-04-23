@@ -42,7 +42,19 @@ module Vector
       ranked = scored.sort_by { |r| -r[:score] }
       ranked = ranked.select { |r| r[:score] >= min_score } if min_score
 
-      ranked.first(k)
+      results = ranked.first(k)
+
+      # analytics
+      analytics_payload = {
+        query: query,
+        k: k,
+        min_score: min_score,
+        count: ranked.count,
+        results: results.map { |r| { id: r[:id], score: r[:score], context: r[:content][0..25] } }
+      }
+      Events::EventBus.instance.publish("rag.search", analytics_payload)
+
+      results
     end
 
     private

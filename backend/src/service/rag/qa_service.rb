@@ -67,6 +67,11 @@ module Rag
         Avoid **over-summarizing** into vague phrases ("worked on various projects")—use real nouns from the snippets (systems, stacks, customers).
         Avoid **over-detailing**: do not transcribe every bullet or minor fact; pick the strongest 1–2 threads that answer the question.
 
+        ## Completeness
+        End every answer with a **complete** final sentence. Do not stop mid-company name, mid-word, or with broken Markdown (e.g. a bold or heading left open: `**Acme` with no closing `**`).
+        If the answer is long, **finish** the current thought (employer, paragraph, or STAR part) first; to save room, **omit** or briefly mention a less important role or bullet—never trail off mid-section.
+        Prefer one **fully told** thread over several partial ones.
+
         ## STAR format (when applicable)
         When the answer describes a **concrete work contribution**—a project, migration, feature, or problem solved at an employer—and the context has enough detail, structure that part using **STAR** (Situation, Task, Action, Result).
         Use exactly these labels on their own lines, then the text (employers skim for this pattern):
@@ -77,7 +82,7 @@ module Rag
         Keep each part to one or two sentences grounded in the snippets. If the context is too thin for a full STAR chain, answer in plain prose instead of padding.
         Do **not** use STAR for simple lookups (e.g. skills list, one fact, yes/no), or when a short narrative is enough.
 
-        For **multiple** roles or projects in one answer, you may use one STAR block for the **most important** item only, or a very short STAR per employer if the question asks for comparison—stay within the length limits.
+        For **multiple** roles or projects in one answer, you may use one STAR block for the **most important** item only, or a very short STAR per employer if the question asks for comparison—stay within the **sentence** limits in the **Length** section below.
 
         ## Grounding
         Answer only from the context snippets in the latest user message. Do not hallucinate; ignore questions unrelated to that context.
@@ -121,6 +126,7 @@ module Rag
         - "You could compare **RT7** with **Mappedin**, or ask about **Terraform**, **Ruby**, or **TypeScript**—say what you care about."
 
         Keep the invitation to **one** short sentence. If nothing substantive remains to explore in the snippets, skip the invitation entirely.
+        If the main answer is already long, **skip the invitation**—a full body with no invite is better than a chopped last line. For invitations, prefer plain tool/company names (no bold) if it keeps the line short.
 
         ## Length
         These caps are upper bounds; prefer substance within them over padding.

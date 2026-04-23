@@ -84,6 +84,7 @@ class QaServiceTest < Minitest::Test
     refute_nil llm.last_system_prompt
     refute_equal "", llm.last_system_prompt.to_s.strip
     assert_includes llm.last_system_prompt, "Format the final response as Markdown"
+    assert_includes llm.last_system_prompt, "## Completeness"
   end
 
   def test_returns_empty_message_when_no_hits

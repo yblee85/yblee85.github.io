@@ -1,4 +1,5 @@
 require_relative "../../test_helper"
+require_relative "../../../src/lib/config"
 require_relative "../../../src/lib/llm/anthropic_client"
 
 class AnthropicClientTest < Minitest::Test
@@ -35,6 +36,13 @@ class AnthropicClientTest < Minitest::Test
     recorder = RecordingClient.new
     client.instance_variable_set(:@client, recorder)
     [client, recorder.messages_api]
+  end
+
+  def test_max_tokens_matches_config
+    client, recorder = build_client
+    client.summarize(user_prompt: "hi", system_prompt: nil, history: [])
+    params = recorder.calls.last
+    assert_equal Config.anthropic_max_output_tokens, params[:max_tokens]
   end
 
   def test_omits_system_when_nil
