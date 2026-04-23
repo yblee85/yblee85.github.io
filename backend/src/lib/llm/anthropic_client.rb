@@ -34,7 +34,7 @@ module Llm
       params = {
         messages: messages,
         model: @model,
-        max_tokens: 400,
+        max_tokens: Config.anthropic_max_output_tokens,
         temperature: 0.1
       }
       system_text = system_prompt.to_s.strip

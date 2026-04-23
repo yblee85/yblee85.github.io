@@ -53,6 +53,10 @@ module Config
     string("ANTHROPIC_MODEL", default: "claude-haiku-4-5")
   end
 
+  def anthropic_max_output_tokens
+    integer("ANTHROPIC_MAX_OUTPUT_TOKENS", default: 2048, min: 256, max: 8192)
+  end
+
   def rack_env
     string("RACK_ENV", default: "development")
   end

@@ -28,16 +28,25 @@ module Middleware
 
       return @app.call(env) if user_id.empty?
 
-      if @limiter.rate_limited?(user_id)
+      rate_limiter_stats = @limiter.stats(user_id)
+      if rate_limiter_stats[:rate_limited]
         body = Web::Response.error(
           code: "rate_limited",
-          message: "rate limit exceeded: max #{Config.chat_max_requests_per_hour_per_user}/hour per user/ip"
+          message: "rate limit exceeded: max #{rate_limiter_stats[:max_count]}/hour per user/ip"
         )
-        return [429, { "Content-Type" => "application/json" }, [body.to_json]]
+        headers = {
+          "x-ratelimit-remaining" => rate_limiter_stats[:remaining_count].to_s,
+          "Content-Type" => "application/json"
+        }
+        return [429, headers, [body.to_json]]
       end
 
       @limiter.record_visit(user_id)
-      @app.call(env)
+      remaining = @limiter.stats(user_id)[:remaining_count]
+
+      status, headers, body = @app.call(env)
+      headers = headers.merge("x-ratelimit-remaining" => remaining.to_s)
+      [status, headers, body]
     end
 
     private

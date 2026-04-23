@@ -19,6 +19,17 @@ module Auth
       visits_in_past_hour.length >= @max_requests_per_hour_per_user
     end
 
+    def stats(user_id)
+      visits_in_past_hour = get_past_hour_timestamps(user_id)
+      {
+        user_id: user_id,
+        rate_limited: visits_in_past_hour.length >= @max_requests_per_hour_per_user,
+        current_count: visits_in_past_hour.length,
+        max_count: @max_requests_per_hour_per_user,
+        remaining_count: @max_requests_per_hour_per_user - visits_in_past_hour.length
+      }
+    end
+
     private
 
     def current_timestamp

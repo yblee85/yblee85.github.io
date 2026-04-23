@@ -109,6 +109,7 @@ export default function ProtectedAuthContent() {
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [rateLimitRemaining, setRateLimitRemaining] = useState<string | null>(null);
   const [chat, setChat] = useState<Array<{ role: "user" | "assistant"; content: string }>>([]);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const canSend = useMemo(() => !isSending && message.trim().length > 0, [isSending, message]);
@@ -252,6 +253,10 @@ export default function ProtectedAuthContent() {
         },
         body: JSON.stringify({ message: text }),
       });
+      const remainingHeader = res.headers.get("x-ratelimit-remaining");
+      if (remainingHeader != null && remainingHeader !== "") {
+        setRateLimitRemaining(remainingHeader);
+      }
       const body = (await res.json().catch(() => ({}))) as {
         answer?: string;
         error?: string | { message?: string };
@@ -262,7 +267,7 @@ export default function ProtectedAuthContent() {
       if (!res.ok) {
         const errorMessage =
           typeof body.error === "string" ? body.error : body.error?.message;
-        throw new Error(errorMessage || "Failed to get response from backend");
+        throw new Error(errorMessage || "Oops! Something went wrong...");
       }
       setChat((prev) => [
         ...prev,
@@ -365,13 +370,20 @@ export default function ProtectedAuthContent() {
         />
         <div className="flex items-center justify-between gap-3">
           {error ? <p className="text-sm text-red-600">{error}</p> : <span />}
-          <button
-            type="submit"
-            disabled={!canSend}
-            className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-indigo-700"
-          >
-            {isSending ? "Sending..." : "Send"}
-          </button>
+          <div className="flex items-center gap-3">
+            {rateLimitRemaining != null && rateLimitRemaining !== "" ? (
+              <p className="text-sm text-gray-500" aria-live="polite">
+                Remaining: {rateLimitRemaining}
+              </p>
+            ) : null}
+            <button
+              type="submit"
+              disabled={!canSend}
+              className="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 hover:bg-indigo-700"
+            >
+              {isSending ? "Sending..." : "Send"}
+            </button>
+          </div>
         </div>
       </form>
     </div>

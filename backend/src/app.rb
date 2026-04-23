@@ -57,6 +57,9 @@ class PortfolioApi < Sinatra::Base
   end
 
   configure do
+    set :show_exceptions, false
+    set :raise_errors, false
+
     OmniAuth.config.allowed_request_methods = %i[get post]
 
     permitted_hosts = [
@@ -83,6 +86,11 @@ class PortfolioApi < Sinatra::Base
            p.start_with?("/auth/logout")
       content_type :json
     end
+  end
+
+  # Re-raise so Middleware::JsonApiErrorHandler (config.ru) can return JSON for /api/*; it re-raises other paths.
+  error do
+    raise env["sinatra.error"]
   end
 
   register Route::HomeRoute

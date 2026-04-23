@@ -7,10 +7,10 @@ My portfolio site [https://yblee85.github.io/](https://yblee85.github.io/).
 It conists of 2 parts;
 
 1. `frontend`(next.js app) that serves my portfolio page. One of features are `Chat with my agent` which you can ask anything about me and it will respond based on given context that are based on my experience.
-Hosted in github page
+   Hosted in github page
 
 2. `backend`(ruby) REST api that has `/api/chat` endpoint which receives a question from a client and generates response using claude. Contexts (My personal experience) are downloaded separately using github personal access token.
-Hosted in digitalocean (App Platform)
+   Hosted in digitalocean (App Platform)
 
 # Getting started
 
