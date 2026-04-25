@@ -5,8 +5,10 @@ module Notifier
     end
 
     def subscribe(event_bus)
-      event_bus.subscribe("auth.login") do |_|
-        @slack_notifier.send_message("Someone logged in to chat page")
+      event_bus.subscribe("auth.login") do |payload|
+        ua = (payload && payload[:user_agent].to_s).strip
+        ua_line = ua.empty? ? "user-agent: unknown" : "user-agent: #{ua}"
+        @slack_notifier.send_message("Someone logged in to chat page (#{ua_line})")
       end
 
       event_bus.subscribe("llm.error") do |payload|
