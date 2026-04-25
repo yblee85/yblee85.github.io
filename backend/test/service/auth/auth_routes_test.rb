@@ -34,7 +34,8 @@ class AuthRoutesTest < Minitest::Test
       Events::EventBus.instance.stub(:publish, ->(name, payload) { published << [name, payload] }) do
         get "/auth/login?guest=true&return_to=http://localhost:3000/chat", {}, {
           "REMOTE_ADDR" => "1.2.3.4",
-          "HTTP_HOST" => "localhost"
+          "HTTP_HOST" => "localhost",
+          "HTTP_USER_AGENT" => "Rack-Test-Guest/1.0"
         }
         assert_equal 302, last_response.status
         assert_equal "http://localhost:3000/chat", last_response.headers["Location"]
@@ -42,6 +43,7 @@ class AuthRoutesTest < Minitest::Test
         assert_equal 1, published.length
         assert_equal "auth.login", published.first[0]
         refute_nil(published.first[1][:user_id])
+        assert_equal "Rack-Test-Guest/1.0", published.first[1][:user_agent]
 
         sess = last_request.env["rack.session"]
         refute_nil sess
@@ -143,6 +145,7 @@ class AuthRoutesTest < Minitest::Test
             {},
             {
               "HTTP_HOST" => "localhost",
+              "HTTP_USER_AGENT" => "Rack-Test-OAuth/1.0",
               "rack.session" => { oauth_return_to: "http://localhost:3000/chat" },
               "omniauth.auth" => auth
             }
@@ -153,6 +156,7 @@ class AuthRoutesTest < Minitest::Test
         assert_equal 1, published.length
         assert_equal "auth.login", published.first[0]
         refute_nil(published.first[1][:user_id])
+        assert_equal "Rack-Test-OAuth/1.0", published.first[1][:user_agent]
       end
     end
   end

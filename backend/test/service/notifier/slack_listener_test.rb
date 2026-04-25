@@ -6,11 +6,11 @@ class SlackListenerTest < Minitest::Test
   def test_subscribe_sends_message_on_auth_login
     bus = Events::EventBus.new
     notifier = Minitest::Mock.new
-    notifier.expect(:send_message, true, ["Someone logged in to chat page"])
+    notifier.expect(:send_message, true, ["Someone logged in to chat page (user-agent: TestAgent/1.0)"])
 
     listener = Notifier::SlackListener.new(slack_notifier: notifier)
     assert listener.subscribe(bus)
-    assert bus.publish("auth.login", { user_id: "user-1" })
+    assert bus.publish("auth.login", { user_id: "user-1", user_agent: "TestAgent/1.0" })
 
     notifier.verify
   end

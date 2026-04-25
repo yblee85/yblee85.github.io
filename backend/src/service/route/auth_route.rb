@@ -37,7 +37,8 @@ module Route
         session[:user] = user
         Auth::CsrfToken.ensure!(session)
 
-        Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"] })
+        Events::EventBus.instance.publish("auth.login",
+                                          { user_id: user["user_id"], user_agent: request.user_agent.to_s })
 
         redirect return_to
       end
@@ -93,7 +94,7 @@ module Route
       session[:user] = user
       Auth::CsrfToken.ensure!(session)
 
-      Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"] })
+      Events::EventBus.instance.publish("auth.login", { user_id: user["user_id"], user_agent: request.user_agent.to_s })
 
       redirect safe_return_to(params["return_to"])
     end
