@@ -147,6 +147,18 @@ export default function ProtectedAuthContent() {
           </p>
         </div>
 
+        <div className="rounded-lg border border-gray-200 bg-white/70 px-4 py-3 text-sm leading-6 text-gray-600">
+          <p className="font-medium text-gray-900">Your privacy comes first and is respected.</p>
+          <p className="mt-1">
+            I do not (nor will I) collect your personal information. It&apos;s anonymous and I do not know who you are.
+          </p>
+          <p className="mt-2">I made this sign-in page for the following reasons:</p>
+          <ol className="mt-2 list-decimal space-y-1 pl-5">
+            <li>To set rate limits to protect against service abuse and billing surprises.</li>
+            <li>For fun/study of OAuth 2.0.</li>
+          </ol>
+        </div>
+
         <div className="w-full rounded-xl border border-gray-200 bg-gray-50/80 p-6 shadow-sm">
           <p className="mb-4 text-center text-xs font-medium uppercase tracking-wider text-gray-400">
             Continue with
@@ -207,18 +219,6 @@ export default function ProtectedAuthContent() {
               Continue as guest
             </button>
           </div>
-        </div>
-
-        <div className="rounded-lg border border-gray-200 bg-white/70 px-4 py-3 text-sm leading-6 text-gray-600">
-          <p className="font-medium text-gray-900">Your privacy comes first and is respected.</p>
-          <p className="mt-1">
-            I do not (nor will I) collect your personal information. It&apos;s anonymous and I do not know who you are.
-          </p>
-          <p className="mt-2">I made this sign-in page for the following reasons:</p>
-          <ol className="mt-2 list-decimal space-y-1 pl-5">
-            <li>To set rate limits to protect against service abuse and billing surprises.</li>
-            <li>For fun/study of OAuth 2.0.</li>
-          </ol>
         </div>
       </div>
     );
