@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "faraday", "~> 2.12"
+gem "faraday", "~> 2.14"
 gem "sinatra", "~> 4.0"
 gem "puma", "~> 8.0"
 gem "langchainrb", "~> 0.19.5"
