@@ -35,6 +35,7 @@ export default function MediaCarousel({ items, intervalMs = 5000 }: Props) {
   if (!len) return null;
 
   const current = items[index];
+  const hasCaptions = items.some((m) => m.description);
 
   return (
     <div
@@ -43,13 +44,12 @@ export default function MediaCarousel({ items, intervalMs = 5000 }: Props) {
       onMouseLeave={() => setPaused(false)}
     >
       <figure className="space-y-3">
-        <div className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
-          <div className="flex min-h-[min(70vh,520px)] w-full items-center justify-center p-4 sm:p-6">
+        <div className="relative h-[min(70vh,520px)] w-full shrink-0 overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-sm">
+          <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6">
             <img
-              key={current.url}
               src={current.url}
               alt={current.description ?? "Screenshot"}
-              className="max-h-[min(70vh,520px)] w-auto max-w-full object-contain"
+              className="max-h-full max-w-full object-contain"
             />
           </div>
           {len > 1 ? (
@@ -57,7 +57,7 @@ export default function MediaCarousel({ items, intervalMs = 5000 }: Props) {
               <button
                 type="button"
                 onClick={goPrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow ring-1 ring-gray-200 hover:bg-white"
+                className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow ring-1 ring-gray-200 hover:bg-white"
                 aria-label="Previous image"
               >
                 <svg
@@ -78,7 +78,7 @@ export default function MediaCarousel({ items, intervalMs = 5000 }: Props) {
               <button
                 type="button"
                 onClick={goNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow ring-1 ring-gray-200 hover:bg-white"
+                className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/90 p-2 text-gray-700 shadow ring-1 ring-gray-200 hover:bg-white"
                 aria-label="Next image"
               >
                 <svg
@@ -96,7 +96,7 @@ export default function MediaCarousel({ items, intervalMs = 5000 }: Props) {
                   />
                 </svg>
               </button>
-              <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5">
+              <div className="absolute bottom-3 left-0 right-0 z-10 flex justify-center gap-1.5">
                 {items.map((m, i) => (
                   <button
                     key={m.url}
@@ -113,9 +113,9 @@ export default function MediaCarousel({ items, intervalMs = 5000 }: Props) {
             </>
           ) : null}
         </div>
-        {current.description ? (
-          <figcaption className="text-sm leading-snug text-gray-600">
-            {current.description}
+        {hasCaptions ? (
+          <figcaption className="min-h-[4.5rem] text-sm leading-snug text-gray-600 line-clamp-3">
+            {current.description ?? "\u00a0"}
           </figcaption>
         ) : null}
         {len > 1 ? (
