@@ -55,6 +55,12 @@ const experience = [
       },
       {
         type: "image",
+        url: "/media/images/medstack-compliance.png",
+        description:
+          "MedStack (https://www.medstack.com/), HIPAA-compliant platform to build, maintain and audit digital health application.",
+      },
+      {
+        type: "image",
         url: "/media/images/medstack-case-study.png",
         description: "Customers",
       },
