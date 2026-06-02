@@ -1,14 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import Home from "@/app/page";
-import { profile } from "@/media/me/aboutme";
+import { profile, skills } from "@/media/me/aboutme";
 
 describe("Home page", () => {
-  it("renders profile and contact links", () => {
+  it("renders profile, skills, education, and contact links", () => {
     render(<Home />);
 
     expect(screen.getByRole("heading", { name: profile.name })).toBeInTheDocument();
     expect(screen.getByText(profile.title)).toBeInTheDocument();
     expect(screen.getByText(profile.description)).toBeInTheDocument();
+
+    expect(screen.getByRole("heading", { name: "Core Skills" })).toBeInTheDocument();
+    expect(screen.getByText(skills[0].category)).toBeInTheDocument();
 
     expect(screen.getByRole("link", { name: "Email" })).toHaveAttribute(
       "href",
