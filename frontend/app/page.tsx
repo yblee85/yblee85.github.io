@@ -1,4 +1,4 @@
-import { profile } from "@/media/me/aboutme";
+import { profile, skills } from "@/media/me/aboutme";
 
 export default function Home() {
   const profilePictureUrl = process.env.NEXT_PUBLIC_PROFILE_PICTURE_URL?.trim();
@@ -21,6 +21,20 @@ export default function Home() {
         </div>
         <p className="max-w-3xl text-sm leading-7 text-gray-600">{profile.description}</p>
       </div>
+
+      <section className="space-y-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
+          Core Skills
+        </h2>
+        <dl className="space-y-2 text-sm">
+          {skills.map(({ category, items }) => (
+            <div key={category} className="flex gap-4">
+              <dt className="w-32 shrink-0 text-gray-400">{category}</dt>
+              <dd className="text-gray-700">{items}</dd>
+            </div>
+          ))}
+        </dl>
+      </section>
 
       <div className="space-y-3">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-400">

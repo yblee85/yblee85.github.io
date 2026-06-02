@@ -1,5 +1,5 @@
 import MediaCarousel from "@/components/MediaCarousel";
-import { experience, skills } from "@/media/me/aboutme";
+import { experience } from "@/media/me/aboutme";
 
 export default function Career() {
   return (
@@ -33,34 +33,6 @@ export default function Career() {
               <MediaCarousel items={job.media} />
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* Skills */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-          Core Skills
-        </h2>
-        <dl className="space-y-2 text-sm">
-          {skills.map(({ category, items }) => (
-            <div key={category} className="flex gap-4">
-              <dt className="w-32 shrink-0 text-gray-400">{category}</dt>
-              <dd className="text-gray-700">{items}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      {/* Education */}
-      <section className="space-y-4">
-        <h2 className="text-xs font-semibold uppercase tracking-wider text-gray-400">
-          Education
-        </h2>
-        <div className="text-sm">
-          <p className="font-medium">Korea Aerospace University</p>
-          <p className="text-gray-500">
-            BSc Information &amp; Telecommunication Technology · 2008
-          </p>
         </div>
       </section>
     </div>
