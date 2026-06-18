@@ -141,6 +141,93 @@ const experience = [
   },
 ];
 
+const personalProjects = [
+  {
+    "name": "Receipt Organizer",
+    "role": "Personal full-stack project",
+    "period": "2026",
+    "summary": "End-to-end receipt capture app: upload a photo or PDF, OCR with Google Document AI, review extracted fields in a Next.js UI, and append a validated row to a shared Google Sheet — with Auth0 login and an email allow-list so only trusted users can access it.",
+    "bullets": [
+      "Designed a domain-driven backend (users + receipts bounded contexts) with rich entities, ports/adapters, and thin application services — refactored from a layer-based Express codebase without changing the public API.",
+      "Built an OCR pipeline with Google Document AI Expense Parser, an anti-corruption layer for Google entity types, and parse-quality warnings (missing, low-confidence, defaulted fields) so users fix uncertain reads before saving.",
+      "Persisted receipts to Google Sheets via a service account — auto year tabs, insert-above-TOTAL rows, live SUM formulas, and duplicate detection (409 Conflict) — no application database.",
+      "Secured the app with Auth0 (server-side OAuth, encrypted session cookies, allow-list + optional admin flag); frontend stays thin — no secrets or auth logic in the browser.",
+      "Shipped with Docker Compose, domain/API/integration tests, and documented the full system in ARCHITECTURE.md."
+    ],
+    "stack": [
+      "Next.js",
+      "TypeScript",
+      "Express",
+      "Google Document AI",
+      "Google Sheets API",
+      "Auth0",
+      "Docker",
+      "Domain-Driven Design",
+      "Node.js"
+    ],
+    "links": [
+      {
+        "label": "Source code",
+        "href": "https://github.com/yblee85/receipt-organizer"
+      },
+      {
+        "label": "Architecture",
+        "href": "https://github.com/yblee85/receipt-organizer/blob/main/ARCHITECTURE.md"
+      }
+    ],
+    "media": [
+      {
+        "type": "image",
+        "url": "/media/images/receipt-organizer-1.png",
+        "description": "Upload screen — Auth0 sign-in, file upload or manual entry.",
+      },
+      {
+        "type": "image",
+        "url": "/media/images/receipt-organizer-2.png",
+        "description": "Review screen — Document AI OCR with low-confidence field warnings before save.",
+      },
+      {
+        "type": "image",
+        "url": "/media/images/receipt-organizer-3.png",
+        "description": "Google Sheet output — receipt row appended with live TOTAL formula.",
+      },
+    ]
+  },
+  {
+    name: "This very site! (Portfolio site + AI career agent)",
+    role: "Personal full-stack project",
+    period: "2026",
+    summary:
+      "This site is both my portfolio and a working demo: a static Next.js frontend on GitHub Pages talks to a Ruby API on DigitalOcean that answers career questions with retrieval-augmented generation (RAG).",
+    bullets: [
+      "Built a RAG pipeline — chunk portfolio JSON, embed with Voyage AI (or local TEI), cosine search in memory, synthesize answers with Claude.",
+      "Split deployment: static frontend (GitHub Pages + Actions) and API backend (Docker on DigitalOcean App Platform).",
+      "Protected chat with OAuth2 (Auth0 → Google, GitHub, LinkedIn), session cookies across origins, CSRF tokens, and per-user rate limits.",
+      "Added admin reindex, event bus, optional Slack notifications, and documented the full system in ARCHITECTURE.md.",
+    ],
+    stack: [
+      "Next.js",
+      "TypeScript",
+      "Ruby",
+      "Sinatra",
+      "Claude API",
+      "RAG",
+      "Auth0",
+      "Docker",
+      "GitHub Actions",
+    ],
+    links: [
+      { label: "Live site", href: "https://yunbo-lee.me/" },
+      { label: "Try the agent", href: "https://yunbo-lee.me/chat/" },
+      { label: "Source code", href: "https://github.com/yblee85/yblee85.github.io" },
+      {
+        label: "Architecture",
+        href: "https://github.com/yblee85/yblee85.github.io/blob/main/ARCHITECTURE.md",
+      },
+    ],
+  },
+];
+
 const personalExperience = [
   {
     company: "The Linux Foundation",
@@ -214,4 +301,4 @@ const profile = {
   },
 };
 
-export { profile, skills, experience, personalExperience };
+export { profile, skills, experience, personalProjects, personalExperience };
