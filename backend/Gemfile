@@ -11,7 +11,7 @@ gem "omniauth", "~> 2.1"
 gem "omniauth-auth0", "~> 3.2"
 
 group :development do
-  gem "rubocop", "~> 1.87", require: false
+  gem "rubocop", "~> 1.88", require: false
   gem "rubocop-performance", "~> 1.24", require: false
 end
 
