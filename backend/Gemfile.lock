@@ -3,7 +3,7 @@ GEM
   specs:
     addressable (2.8.9)
       public_suffix (>= 2.0.2, < 8.0)
-    anthropic (1.49.0)
+    anthropic (1.50.0)
       cgi
       connection_pool
       standardwebhooks
@@ -13,7 +13,7 @@ GEM
     baran (0.1.12)
     base64 (0.3.0)
     bigdecimal (3.3.1)
-    cgi (0.5.1)
+    cgi (0.5.2)
     connection_pool (3.0.2)
     csv (3.3.5)
     drb (2.2.3)
@@ -144,7 +144,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  anthropic (~> 1.49.0)
+  anthropic (~> 1.50.0)
   faraday (~> 2.14)
   langchainrb (~> 0.19.5)
   minitest (~> 6.0)
