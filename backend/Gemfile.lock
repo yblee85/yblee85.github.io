@@ -3,10 +3,11 @@ GEM
   specs:
     addressable (2.8.9)
       public_suffix (>= 2.0.2, < 8.0)
-    anthropic (1.59.0)
-      cgi
-      connection_pool
-      standardwebhooks
+    anthropic (1.61.0)
+      base64 (~> 0.1)
+      cgi (~> 0.1)
+      connection_pool (>= 2, < 4)
+      standardwebhooks (~> 1.0)
     ast (2.4.3)
     auth-sanitizer (0.1.4)
       version_gem (~> 1.1, >= 1.1.9)
@@ -144,7 +145,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
-  anthropic (~> 1.59.0)
+  anthropic (~> 1.61.0)
   faraday (~> 2.14)
   langchainrb (~> 0.19.5)
   minitest (~> 6.0)
