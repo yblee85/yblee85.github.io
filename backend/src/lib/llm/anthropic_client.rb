@@ -31,11 +31,12 @@ module Llm
       end
       messages << { role: :user, content: user_prompt }
 
+      # temperature/top_p/top_k are rejected by Anthropic API version 2026-10-21
+      # (and by Claude 4.7+ models even on older versions).
       params = {
         messages: messages,
         model: @model,
-        max_tokens: Config.anthropic_max_output_tokens,
-        temperature: 0.1
+        max_tokens: Config.anthropic_max_output_tokens
       }
       system_text = system_prompt.to_s.strip
       params[:system_] = system_text unless system_text.empty?

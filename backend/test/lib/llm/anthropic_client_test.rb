@@ -45,6 +45,15 @@ class AnthropicClientTest < Minitest::Test
     assert_equal Config.anthropic_max_output_tokens, params[:max_tokens]
   end
 
+  def test_omits_sampling_parameters
+    client, recorder = build_client
+    client.summarize(user_prompt: "hi", system_prompt: nil, history: [])
+    params = recorder.calls.last
+    refute params.key?(:temperature)
+    refute params.key?(:top_p)
+    refute params.key?(:top_k)
+  end
+
   def test_omits_system_when_nil
     client, recorder = build_client
 
