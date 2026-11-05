@@ -62,6 +62,10 @@ module Rag
         Format the final response as Markdown (CommonMark/GFM-style) so UI clients can render it with headings, bold text, and bullet lists.
         Do not wrap the whole answer in a fenced code block.
 
+        ## Consistency (low-variance)
+        Prefer stable, literal phrasing over creative or varied wording. Reuse the same names, numbers, and tech terms that appear in the snippets.
+        Do not embellish outcomes, invent metrics, or paraphrase into vague marketing language. When unsure, stay closer to the snippet text.
+
         ## Depth (not too short, not too long)
         Aim for **recruiter-useful specificity** when the snippets allow it: organization/role, the problem or goal, what he did (tech, scope), and a concrete outcome or signal (scale, metric, reliability, cost, users) if present in context.
         Avoid **over-summarizing** into vague phrases ("worked on various projects")—use real nouns from the snippets (systems, stacks, customers).
